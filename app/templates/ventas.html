@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titulo %}Ventas{% endblock %}
+{% block contenido %}
+<div class="acciones" style="justify-content:space-between">
+  <div><h1>Ventas</h1><p class="sub">{{ total.n|entero }} tickets · {{ total.t|dinero }}</p></div>
+  <a class="boton" href="{{ url_for('nueva_venta') }}">+ Nueva venta</a>
+</div>
+
+<form class="filtros">
+  <label>Tienda
+    <select name="tienda"><option value="">Todas</option>
+      {% for t in tiendas %}<option value="{{ t.numero_tienda }}" {{ 'selected' if f.tienda == t.numero_tienda|string }}>{{ t.nombre }}</option>{% endfor %}
+    </select></label>
+  <label>Desde <input type="date" name="desde" value="{{ f.desde }}"></label>
+  <label>Hasta <input type="date" name="hasta" value="{{ f.hasta }}"></label>
+  <label>Estado
+    <select name="estado"><option value="">Todos</option>
+      {% for e in ['Completada', 'Devuelta parcial', 'Devuelta'] %}<option {{ 'selected' if f.estado == e }}>{{ e }}</option>{% endfor %}
+    </select></label>
+  <button>Filtrar</button> <a class="boton sec" href="{{ url_for('ventas') }}">Limpiar</a>
+</form>
+
+<div class="tarjeta tabla-scroll">
+  <table>
+    <tr><th>Ticket</th><th>Fecha</th><th>Tienda</th><th>Vendedor</th><th>Cliente</th><th>Pago</th>
+        <th class="n">Subtotal</th><th class="n">Desc.</th><th class="n">Impuesto</th><th class="n">Total</th><th>Estado</th></tr>
+    {% for v in filas %}
+    <tr>
+      <td><a href="{{ url_for('venta', id_venta=v.id_venta) }}">#{{ v.id_venta }}</a></td>
+      <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ v.tienda }} <small class="sub">{{ v.estado_eua }}</small></td>
+      <td>{{ v.vendedor }}</td><td>{{ v.cliente }}</td><td>{{ v.metodo_pago }}</td>
+      <td class="n">{{ v.subtotal|dinero }}</td><td class="n">{{ v.descuento|dinero }}</td><td class="n">{{ v.impuesto|dinero }}</td>
+      <td class="n"><b>{{ v.total|dinero }}</b></td>
+      <td><span class="chip {{ 'verde' if v.estado == 'Completada' else 'ambar' }}">{{ v.estado }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="paginas">
+    {% for p in range(1, paginas + 1) %}
+      {% if p == pagina %}<span>{{ p }}</span>{% else %}<a href="{{ url_for('ventas', pagina=p, **f) }}">{{ p }}</a>{% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

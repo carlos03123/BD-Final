@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block titulo %}Nueva venta{% endblock %}
+{% block contenido %}
+<h1>Nueva venta</h1>
+<p class="sub">Usa el procedimiento <code>sp_registrar_venta</code>: toda la venta se guarda en una transacción. Si algún artículo no pasa las reglas (existencia, crédito, producto descontinuado...), no se guarda nada y aquí aparece el mensaje de la base de datos.</p>
+
+<form method="post" class="tarjeta" id="fVenta">
+  <div class="filtros">
+    <label>Tienda
+      <select name="tienda" id="tienda" required>
+        {% for t in tiendas %}<option value="{{ t.id_sucursal }}" {{ 'selected' if form.get('tienda') == t.id_sucursal|string }}>{{ t.nombre }} ({{ t.abreviatura }})</option>{% endfor %}
+      </select></label>
+    <label>Vendedor
+      <select name="empleado" id="empleado" required>
+        {% for e in empleados %}<option value="{{ e.id_empleado }}" data-tienda="{{ e.id_sucursal }}" {{ 'selected' if form.get('empleado') == e.id_empleado|string }}>{{ e.nombre }} · {{ e.puesto }}</option>{% endfor %}
+      </select></label>
+    <label>Cliente (correo, opcional)
+      <input name="cliente" list="lClientes" value="{{ form.get('cliente', '') }}" placeholder="Vacío = no registrado" style="min-width:260px"></label>
+    <label>Método de pago
+      <select name="metodo">{% for m in metodos %}<option {{ 'selected' if form.get('metodo') == m }}>{{ m }}</option>{% endfor %}</select></label>
+  </div>
+
+  <table class="lineas" id="tLineas">
+    <tr><th style="width:55%">Producto (SKU)</th><th>Cantidad</th><th class="n">Precio</th><th class="n">Existencia en tienda</th><th></th></tr>
+  </table>
+  <div class="acciones" style="margin-top:12px">
+    <button type="button" class="sec" onclick="agregarLinea()">+ Agregar producto</button>
+    <span class="sub" id="estimado"></span>
+    <button style="margin-left:auto">Registrar venta</button>
+  </div>
+</form>
+
+<div class="aviso info">Prueba las reglas: vende 100 piezas de algo, el producto <code>VJ-PS4-FIFA23</code> (descontinuado), o paga con "Crédito en tienda" a un cliente sin saldo.</div>
+
+<datalist id="lProductos">{% for p in productos %}<option value="{{ p.sku }}">{{ p.nombre }} · {{ p.condicion }} · ${{ p.precio_venta }}</option>{% endfor %}</datalist>
+<datalist id="lClientes">{% for c in clientes %}<option value="{{ c.correo }}">{{ c.nombre }}</option>{% endfor %}</datalist>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const tienda = document.getElementById('tienda'), empleado = document.getElementById('empleado');
+function filtrarEmpleados() {
+  let primero = null;
+  for (const o of empleado.options) {
+    const visible = o.dataset.tienda === tienda.value;
+    o.hidden = !visible;
+    if (visible && !primero) primero = o;
+  }
+  if (empleado.selectedOptions[0]?.hidden) empleado.value = primero.value;
+  document.querySelectorAll('#tLineas input[name=sku]').forEach(revisar);
+}
+async function revisar(inp) {
+  const fila = inp.closest('tr');
+  if (!inp.value) { fila.querySelector('.precio').textContent = ''; fila.querySelector('.exist').textContent = ''; return estimar(); }
+  const r = await fetch(`{{ url_for('api_existencia') }}?tienda=${tienda.value}&sku=${encodeURIComponent(inp.value)}`).then(r => r.json());
+  fila.querySelector('.precio').textContent = r.precio ? '$' + r.precio.toFixed(2) : '—';
+  fila.querySelector('.precio').dataset.v = r.precio || 0;
+  fila.querySelector('.exist').innerHTML = r.precio ? `<span class="chip ${r.existencia > 0 ? 'verde' : 'rojo'}">${r.existencia} pzas</span>` : '<span class="chip rojo">No existe</span>';
+  estimar();
+}
+function estimar() {
+  let s = 0;
+  document.querySelectorAll('#tLineas tr').forEach(f => {
+    const p = f.querySelector('.precio'), q = f.querySelector('input[name=cantidad]');
+    if (p && q) s += (+p.dataset.v || 0) * (+q.value || 0);
+  });
+  document.getElementById('estimado').textContent = s ? `Subtotal estimado: $${s.toFixed(2)} + impuesto del estado` : '';
+}
+function agregarLinea(sku = '', cant = 1) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><input name="sku" list="lProductos" placeholder="Escribe el nombre o SKU" value="${sku}"></td>
+    <td><input name="cantidad" type="number" min="1" value="${cant}" style="width:80px"></td>
+    <td class="n precio"></td><td class="n exist"></td>
+    <td><button type="button" class="chico sec" onclick="this.closest('tr').remove(); estimar()">✕</button></td>`;
+  document.getElementById('tLineas').appendChild(tr);
+  tr.querySelector('input[name=sku]').addEventListener('change', e => revisar(e.target));
+  tr.querySelector('input[name=cantidad]').addEventListener('input', estimar);
+  if (sku) revisar(tr.querySelector('input[name=sku]'));
+}
+tienda.addEventListener('change', filtrarEmpleados);
+{% if form.getlist %}{% for s, q in zip(form.getlist('sku'), form.getlist('cantidad')) if s %}agregarLinea({{ s|tojson }}, {{ q|int }});{% endfor %}{% endif %}
+if (!document.querySelector('#tLineas input')) { agregarLinea(); agregarLinea(); }
+filtrarEmpleados();
+</script>
+{% endblock %}

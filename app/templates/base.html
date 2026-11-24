@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Panel{% endblock %} · GameStop USA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+  <script src="{{ url_for('static', filename='chart.umd.min.js') }}"></script>
+</head>
+<body>
+  <aside class="lateral">
+    <div class="marca">
+      <b>GAME<span>STOP</span> USA</b>
+      <small>Sistema de tiendas · BD Final</small>
+    </div>
+    {% set ep = request.endpoint or '' %}
+    <nav>
+      <a href="{{ url_for('tablero') }}" class="{{ 'activo' if ep == 'tablero' }}">📊 Tablero</a>
+      <a href="{{ url_for('nueva_venta') }}" class="{{ 'activo' if ep == 'nueva_venta' }}">🛒 Nueva venta</a>
+      <a href="{{ url_for('ventas') }}" class="{{ 'activo' if ep in ('ventas', 'venta') }}">🧾 Ventas</a>
+      <a href="{{ url_for('catalogo') }}" class="{{ 'activo' if ep == 'catalogo' }}">🎮 Catálogo</a>
+      <a href="{{ url_for('inventario') }}" class="{{ 'activo' if ep == 'inventario' }}">📦 Inventario</a>
+      <a href="{{ url_for('clientes') }}" class="{{ 'activo' if ep in ('clientes', 'cliente') }}">👤 Clientes</a>
+      <a href="{{ url_for('reportes') }}" class="{{ 'activo' if ep == 'reportes' }}">📈 Reportes</a>
+      <a href="{{ url_for('mongodb') }}" class="{{ 'activo' if ep == 'mongodb' }}">🍃 MySQL vs MongoDB</a>
+    </nav>
+    <div class="pie">MySQL 8 · Flask<br>Datos ficticios con fines académicos</div>
+  </aside>
+  <main>
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for tipo, m in mensajes %}<div class="aviso {{ tipo }}">{{ m }}</div>{% endfor %}
+    {% endwith %}
+    {% if contenido_error %}<h1>{{ contenido_error }}</h1><p><a href="{{ url_for('tablero') }}">Volver al tablero</a></p>{% endif %}
+    {% block contenido %}{% endblock %}
+  </main>
+  <script>
+    Chart.defaults.font.family = '"Segoe UI", system-ui, sans-serif';
+    Chart.defaults.color = '#6b6b76';
+    const ROJO = '#d6001c', NEGRO = '#111114';
+    const PALETA = ['#d6001c', '#111114', '#6b6b76', '#f2707f', '#b0b0ba', '#a80016', '#3b3b44', '#ffc2ca', '#e3e3e8', '#5c0010'];
+    const usd = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits: 0});
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

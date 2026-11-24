@@ -3,6 +3,7 @@
 //  Archivo 2 de 4: datos
 //  Ejecutar después de 01_colecciones.js:   mongosh mongodb/02_datos.js
 //
+//  GENERADO con:  python migracion/migrar.py --js mongodb/02_datos.js
 //  Son exactamente los mismos datos que la versión MySQL (estado después
 //  de cargar los archivos 01 a 05), ya calculados: importes, impuestos,
 //  puntos, crédito en tienda e inventario.
@@ -14,12 +15,14 @@ db = db.getSiblingDB("gamestop_usa");
 const D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");
 
 // Niveles del programa de lealtad
+db.niveles_membresia.deleteMany({});
 db.niveles_membresia.insertMany([
   { _id: 1, nombre: "PowerUp Rewards", costo_anual: 0.0, descuento_usados_pct: 0.0, bono_intercambio_pct: 0.0, puntos_por_dolar: 1 },
   { _id: 2, nombre: "GameStop Pro", costo_anual: 25.0, descuento_usados_pct: 10.0, bono_intercambio_pct: 10.0, puntos_por_dolar: 2 }
 ]);
 
 // Tiendas, con su estado (y tasa de impuesto) y sus empleados embebidos
+db.sucursales.deleteMany({});
 db.sucursales.insertMany([
   { _id: 1, numero_tienda: 4402, nombre: "GameStop Grapevine Mills", direccion: "3000 Grapevine Mills Pkwy, Suite 512", ciudad: "Grapevine", estado: { abreviatura: "TX", nombre: "Texas", tasa_impuesto: 0.0625 }, codigo_postal: "76051", telefono: "(972) 555-0142", fecha_apertura: D("2004-08-14"), activa: true, empleados: [{ _id: 1, nombre: "Robert", apellido: "Coleman", correo: "robert.coleman@gamestop.com", telefono: "(287) 555-5694", puesto: "Gerente de distrito", salario_hora: 41.5, fecha_contratacion: D("2009-01-12"), activo: true }, { _id: 3, nombre: "Emily", apellido: "Nguyen", correo: "emily.nguyen@gamestop.com", telefono: "(507) 555-8242", puesto: "Gerente de tienda", salario_hora: 29.0, fecha_contratacion: D("2015-04-02"), id_supervisor: 1, activo: true }, { _id: 4, nombre: "Jose", apellido: "Rodriguez", correo: "jose.rodriguez@gamestop.com", telefono: "(337) 555-6749", puesto: "Subgerente", salario_hora: 22.5, fecha_contratacion: D("2020-12-04"), id_supervisor: 3, activo: true }, { _id: 5, nombre: "Sofia", apellido: "Rodriguez", correo: "sofia.rodriguez@gamestop.com", telefono: "(745) 555-1579", puesto: "Asesor senior", salario_hora: 17.0, fecha_contratacion: D("2019-05-10"), id_supervisor: 4, activo: true }, { _id: 6, nombre: "Sofia", apellido: "Campbell", correo: "sofia.campbell@gamestop.com", telefono: "(373) 555-2192", puesto: "Asesor", salario_hora: 15.0, fecha_contratacion: D("2024-03-19"), id_supervisor: 4, activo: true }, { _id: 7, nombre: "Matthew", apellido: "Lee", correo: "matthew.lee@gamestop.com", telefono: "(643) 555-7490", puesto: "Asesor", salario_hora: 15.0, fecha_contratacion: D("2026-01-16"), id_supervisor: 4, activo: true }] },
   { _id: 2, numero_tienda: 5121, nombre: "GameStop Galleria Dallas", direccion: "13350 Dallas Pkwy, Suite 2140", ciudad: "Dallas", estado: { abreviatura: "TX", nombre: "Texas", tasa_impuesto: 0.0625 }, codigo_postal: "75240", telefono: "(972) 555-0187", fecha_apertura: D("2006-03-02"), activa: true, empleados: [{ _id: 8, nombre: "Tyler", apellido: "Anderson", correo: "tyler.anderson@gamestop.com", telefono: "(361) 555-3725", puesto: "Gerente de tienda", salario_hora: 31.0, fecha_contratacion: D("2018-08-14"), id_supervisor: 1, activo: true }, { _id: 9, nombre: "Camila", apellido: "Robinson", correo: "camila.robinson@gamestop.com", telefono: "(426) 555-9622", puesto: "Subgerente", salario_hora: 22.5, fecha_contratacion: D("2017-01-02"), id_supervisor: 8, activo: true }, { _id: 10, nombre: "Aiden", apellido: "Thompson", correo: "aiden.thompson@gamestop.com", telefono: "(989) 555-2945", puesto: "Asesor senior", salario_hora: 17.0, fecha_contratacion: D("2024-05-24"), id_supervisor: 9, activo: true }, { _id: 11, nombre: "Logan", apellido: "Rivera", correo: "logan.rivera@gamestop.com", telefono: "(480) 555-9009", puesto: "Asesor", salario_hora: 15.0, fecha_contratacion: D("2026-03-03"), id_supervisor: 9, activo: true }] },
@@ -34,6 +37,7 @@ db.sucursales.insertMany([
 ]);
 
 // Clientes con su membresía embebida
+db.clientes.deleteMany({});
 db.clientes.insertMany([
   { _id: 1, nombre: "Aiden", apellido: "Robinson", correo: "aiden.robinson@email.com", telefono: "(542) 555-5375", fecha_nacimiento: D("2002-03-15"), estado: "CA", membresia: { nivel: "GameStop Pro", vencimiento: D("2027-04-18") }, puntos: 1703, credito_tienda: 0.0, fecha_registro: D("2026-01-23") },
   { _id: 2, nombre: "Ashley", apellido: "Perez", correo: "ashley.perez@mail.com", telefono: "(648) 555-3256", fecha_nacimiento: D("1989-09-17"), estado: "TX", membresia: { nivel: "GameStop Pro", vencimiento: D("2027-04-25") }, puntos: 2665, credito_tienda: 0.0, fecha_registro: D("2022-02-05") },
@@ -98,6 +102,7 @@ db.clientes.insertMany([
 ]);
 
 // Proveedores
+db.proveedores.deleteMany({});
 db.proveedores.insertMany([
   { _id: 1, nombre: "Sony Interactive Entertainment", contacto: "Laura Bennett", telefono: "(650) 555-0101", correo: "trade@sie.example.com", ciudad: "San Mateo", estado: "CA" },
   { _id: 2, nombre: "Microsoft Gaming", contacto: "Kevin Brooks", telefono: "(425) 555-0102", correo: "retail@xbox.example.com", ciudad: "Redmond", estado: "WA" },
@@ -117,6 +122,7 @@ db.proveedores.insertMany([
 ]);
 
 // Catálogo (el _id es el SKU), con géneros e inventario por tienda embebidos
+db.productos.deleteMany({});
 db.productos.insertMany([
   { _id: "CON-PS5-SLM", nombre: "PlayStation 5 Slim (lector de discos)", categoria: "Consola", plataforma: { nombre: "PlayStation 5", fabricante: "Sony" }, proveedor: 1, condicion: "Nuevo", precio_venta: 449.99, costo: 420.0, fecha_lanzamiento: D("2023-11-10"), activo: true, inventario: [{ sucursal: 1, existencia: 3, stock_minimo: 2 }, { sucursal: 2, existencia: 3, stock_minimo: 2 }, { sucursal: 3, existencia: 5, stock_minimo: 2 }, { sucursal: 4, existencia: 13, stock_minimo: 2 }, { sucursal: 5, existencia: 5, stock_minimo: 2 }, { sucursal: 6, existencia: 4, stock_minimo: 2 }, { sucursal: 7, existencia: 2, stock_minimo: 2 }, { sucursal: 8, existencia: 2, stock_minimo: 2 }, { sucursal: 9, existencia: 9, stock_minimo: 2 }, { sucursal: 10, existencia: 2, stock_minimo: 2 }] },
   { _id: "CON-PS5-DIG", nombre: "PlayStation 5 Digital Edition", categoria: "Consola", plataforma: { nombre: "PlayStation 5", fabricante: "Sony" }, proveedor: 1, condicion: "Nuevo", precio_venta: 399.99, costo: 375.0, fecha_lanzamiento: D("2023-11-10"), activo: true, inventario: [{ sucursal: 1, existencia: 9, stock_minimo: 2 }, { sucursal: 2, existencia: 5, stock_minimo: 2 }, { sucursal: 3, existencia: 5, stock_minimo: 2 }, { sucursal: 4, existencia: 5, stock_minimo: 2 }, { sucursal: 5, existencia: 8, stock_minimo: 2 }, { sucursal: 6, existencia: 3, stock_minimo: 2 }, { sucursal: 7, existencia: 3, stock_minimo: 2 }, { sucursal: 8, existencia: 1, stock_minimo: 2 }, { sucursal: 9, existencia: 3, stock_minimo: 2 }, { sucursal: 10, existencia: 7, stock_minimo: 2 }] },
@@ -188,6 +194,7 @@ db.productos.insertMany([
 ]);
 
 // Ventas: artículos y devoluciones embebidos; cliente = null si no está registrado
+db.ventas.deleteMany({});
 db.ventas.insertMany([
   { _id: 1, fecha: D("2026-10-01T12:20:00"), sucursal: { _id: 4, nombre: "GameStop Century City", estado: "CA" }, empleado: { _id: 20, nombre: "Matthew Johnson" }, cliente: 26, metodo_pago: "Tarjeta de crédito", articulos: [{ sku: "VJ-PS5-BO7", nombre: "Call of Duty: Black Ops 7", categoria: "Videojuego", condicion: "Nuevo", cantidad: 1, precio_unitario: 69.99, descuento: 0.0 }, { sku: "GC-ESHOP-50", nombre: "Tarjeta Nintendo eShop $50", categoria: "Tarjeta de regalo", condicion: "Nuevo", cantidad: 2, precio_unitario: 50.0, descuento: 0.0 }], subtotal: 169.99, descuento: 0.0, impuesto: 12.32, total: 182.31, estado: "Completada" },
   { _id: 2, fecha: D("2026-10-01T12:30:00"), sucursal: { _id: 5, nombre: "GameStop Mission Valley", estado: "CA" }, empleado: { _id: 22, nombre: "James Mitchell" }, cliente: 12, metodo_pago: "Tarjeta de crédito", articulos: [{ sku: "VJ-NS2-MKW", nombre: "Mario Kart World", categoria: "Videojuego", condicion: "Nuevo", cantidad: 1, precio_unitario: 79.99, descuento: 0.0 }, { sku: "VJ-NS2-DKB", nombre: "Donkey Kong Bananza", categoria: "Videojuego", condicion: "Nuevo", cantidad: 1, precio_unitario: 69.99, descuento: 0.0 }], subtotal: 149.98, descuento: 0.0, impuesto: 10.87, total: 160.85, estado: "Completada" },
@@ -665,6 +672,7 @@ db.ventas.insertMany([
 ]);
 
 // Intercambios (trade-ins) con artículos embebidos
+db.intercambios.deleteMany({});
 db.intercambios.insertMany([
   { _id: 1, fecha: D("2026-10-01T19:25:00"), sucursal: 3, empleado: 15, cliente: 52, forma_pago: "Crédito en tienda", articulos: [{ sku: "CON-PS4-SLM-U", nombre: "PlayStation 4 Slim 1TB (usada)", cantidad: 1, valor_unitario: 77.0 }, { sku: "VJ-NSW-BOTW-U", nombre: "The Legend of Zelda: Breath of the Wild (usado)", cantidad: 1, valor_unitario: 17.32 }], total_pagado: 94.32 },
   { _id: 2, fecha: D("2026-10-02T14:00:00"), sucursal: 2, empleado: 10, cliente: 35, forma_pago: "Crédito en tienda", articulos: [{ sku: "VJ-XONE-HALO-U", nombre: "Halo Infinite (usado)", cantidad: 1, valor_unitario: 4.55 }, { sku: "VJ-NSW-MK8-U", nombre: "Mario Kart 8 Deluxe (usado)", cantidad: 1, valor_unitario: 14.0 }], total_pagado: 18.55 },
@@ -699,6 +707,7 @@ db.intercambios.insertMany([
 ]);
 
 // Preventas
+db.preventas.deleteMany({});
 db.preventas.insertMany([
   { _id: 1, fecha: D("2026-06-11"), cliente: 38, producto: "VJ-XSX-GTA6", sucursal: 7, anticipo: 10.0, estado: "Entregada" },
   { _id: 2, fecha: D("2026-06-22"), cliente: 13, producto: "VJ-PS5-GTA6", sucursal: 8, anticipo: 10.0, estado: "Entregada" },
@@ -726,6 +735,7 @@ db.preventas.insertMany([
 ]);
 
 // Órdenes de compra con artículos embebidos
+db.ordenes_compra.deleteMany({});
 db.ordenes_compra.insertMany([
   { _id: 1, fecha: D("2026-11-03"), proveedor: 6, sucursal: 1, empleado: 3, estado: "Recibida", fecha_recepcion: D("2026-11-17"), articulos: [{ sku: "VJ-PS5-GTA6", cantidad: 40, costo_unitario: 48.0 }, { sku: "VJ-XSX-GTA6", cantidad: 15, costo_unitario: 48.0 }], total: 2640.0 },
   { _id: 2, fecha: D("2026-11-03"), proveedor: 6, sucursal: 2, empleado: 8, estado: "Recibida", fecha_recepcion: D("2026-11-17"), articulos: [{ sku: "VJ-PS5-GTA6", cantidad: 30, costo_unitario: 48.0 }, { sku: "VJ-XSX-GTA6", cantidad: 10, costo_unitario: 48.0 }], total: 1920.0 },
@@ -749,6 +759,7 @@ db.ordenes_compra.insertMany([
 ]);
 
 // Bitácora de cambios de precio
+db.bitacora_precios.deleteMany({});
 db.bitacora_precios.insertMany([
   { _id: 1, producto: "VJ-PS5-MAD26", precio_anterior: 69.99, precio_nuevo: 59.99, fecha: D("2026-10-15T07:00:00"), usuario: "root@localhost" },
   { _id: 2, producto: "VJ-PS4-GTAV-U", precio_anterior: 14.99, precio_nuevo: 12.99, fecha: D("2026-11-01T07:00:00"), usuario: "root@localhost" },
@@ -763,6 +774,5 @@ db.bitacora_precios.insertMany([
 ]);
 
 print("Datos cargados:");
-["niveles_membresia", "sucursales", "clientes", "proveedores", "productos", "ventas",
- "intercambios", "preventas", "ordenes_compra", "bitacora_precios"]
+["niveles_membresia", "sucursales", "clientes", "proveedores", "productos", "ventas", "intercambios", "preventas", "ordenes_compra", "bitacora_precios"]
   .forEach(c => print("  " + c.padEnd(18) + db[c].countDocuments()));

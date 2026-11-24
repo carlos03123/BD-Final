@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Ticket #{{ t.id_venta }}{% endblock %}
+{% block contenido %}
+<h1>Ticket #{{ t.id_venta }} <span class="chip {{ 'verde' if t.estado == 'Completada' else 'ambar' }}">{{ t.estado }}</span></h1>
+<p class="sub">{{ t.fecha.strftime('%d/%m/%Y %H:%M') }} · {{ t.tienda }} (#{{ t.numero_tienda }}, {{ t.estado_eua }}) · Atendió {{ t.vendedor }}</p>
+
+<div class="rejilla r3">
+  <div class="tarjeta">
+    <h2>Artículos</h2>
+    <table>
+      <tr><th>Producto</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">Desc. Pro</th><th class="n">Importe</th></tr>
+      {% for l in lineas %}
+      <tr><td>{{ l.nombre }} <span class="chip">{{ l.condicion }}</span><br><small class="sub">{{ l.sku }}</small></td>
+          <td class="n">{{ l.cantidad }}</td><td class="n">{{ l.precio_unitario|dinero }}</td>
+          <td class="n">{{ l.descuento|dinero }}</td><td class="n">{{ l.importe|dinero }}</td></tr>
+      {% endfor %}
+      <tr><td colspan="4" class="n">Subtotal</td><td class="n">{{ t.subtotal|dinero }}</td></tr>
+      <tr><td colspan="4" class="n">Descuento GameStop Pro</td><td class="n">−{{ t.descuento|dinero }}</td></tr>
+      <tr><td colspan="4" class="n">Impuesto estatal ({{ t.estado_eua }})</td><td class="n">{{ t.impuesto|dinero }}</td></tr>
+      <tr><td colspan="4" class="n total-ticket"><b>Total</b></td><td class="n total-ticket"><b>{{ t.total|dinero }}</b></td></tr>
+    </table>
+    <p class="sub">Cliente: {{ t.cliente }} · Pago: {{ t.metodo_pago }}</p>
+  </div>
+
+  <div>
+    <div class="tarjeta">
+      <h2>Registrar devolución</h2>
+      <p class="sub">Los triggers validan el plazo de 30 días y las cantidades, regresan el inventario y calculan el reembolso con impuesto.</p>
+      <form method="post" action="{{ url_for('devolucion', id_venta=t.id_venta) }}" style="display:grid;gap:10px">
+        <label>Producto
+          <select name="sku">{% for l in lineas %}<option value="{{ l.sku }}">{{ l.nombre }} (puede devolver {{ l.devolvible }})</option>{% endfor %}</select></label>
+        <label>Cantidad <input type="number" name="cantidad" min="1" value="1"></label>
+        <label>Motivo
+          <select name="motivo">{% for m in ['Defectuoso', 'No le gustó', 'Regalo duplicado', 'Error de compra'] %}<option>{{ m }}</option>{% endfor %}</select></label>
+        <button>Devolver</button>
+      </form>
+    </div>
+    {% if devs %}
+    <div class="tarjeta">
+      <h2>Devoluciones</h2>
+      <table>
+        {% for d in devs %}
+        <tr><td>{{ d.fecha.strftime('%d/%m/%Y') }}<br><small class="sub">{{ d.motivo }}</small></td>
+            <td>{{ d.cantidad }} × {{ d.nombre }}</td><td class="n">{{ d.monto_reembolsado|dinero }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<a href="{{ url_for('ventas') }}">← Volver a ventas</a>
+{% endblock %}

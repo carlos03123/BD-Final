@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Catálogo{% endblock %}
+{% block contenido %}
+<h1>Catálogo</h1>
+<p class="sub">Vista <code>v_catalogo</code>. Si cambias un precio, el trigger lo registra en la bitácora y no permite que quede por debajo del costo.</p>
+
+<form class="filtros">
+  <label>Buscar <input name="q" value="{{ f.q }}" placeholder="Nombre o SKU"></label>
+  {% for campo, valores in opciones.items() %}
+  <label>{{ campo|capitalize }}
+    <select name="{{ campo }}"><option value="">Todas</option>
+      {% for v in valores %}<option {{ 'selected' if f[campo] == v }}>{{ v }}</option>{% endfor %}
+    </select></label>
+  {% endfor %}
+  <button>Filtrar</button> <a class="boton sec" href="{{ url_for('catalogo') }}">Limpiar</a>
+</form>
+
+<div class="tarjeta tabla-scroll">
+  <table>
+    <tr><th>SKU</th><th>Producto</th><th>Categoría</th><th>Plataforma</th><th>Condición</th><th>Géneros</th>
+        <th class="n">Costo</th><th class="n">Margen</th><th class="n">Existencia</th><th>Precio</th></tr>
+    {% for p in productos %}
+    <tr>
+      <td><code>{{ p.sku }}</code></td>
+      <td>{{ p.nombre }} {% if not p.activo %}<span class="chip rojo">Descontinuado</span>{% endif %}
+          {% if p.clasificacion_esrb %}<span class="chip">ESRB {{ p.clasificacion_esrb }}</span>{% endif %}</td>
+      <td>{{ p.categoria }}</td><td>{{ p.plataforma }}</td>
+      <td><span class="chip {{ 'verde' if p.condicion == 'Nuevo' else 'ambar' }}">{{ p.condicion }}</span></td>
+      <td><small>{{ p.generos or '' }}</small></td>
+      <td class="n">{{ p.costo|dinero }}</td><td class="n">{{ p.margen_pct }} %</td>
+      <td class="n">{{ p.existencia_total }}</td>
+      <td>
+        <form method="post" action="{{ url_for('cambiar_precio', sku=p.sku) }}" class="acciones" style="flex-wrap:nowrap">
+          <input name="precio" type="number" step="0.01" min="0.01" value="{{ p.precio_venta }}" style="width:95px;min-width:0">
+          <button class="chico sec" title="Guardar precio">💾</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="sub">{{ productos|length }} productos</p>
+</div>
+{% endblock %}

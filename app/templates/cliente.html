@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block titulo %}{{ c.cliente }}{% endblock %}
+{% block contenido %}
+<h1>{{ c.cliente }}</h1>
+<p class="sub">{{ c.correo }} · {{ c.estado_eua }} · {{ c.nivel }}
+  {% if c.vencimiento_membresia %}(vence {{ c.vencimiento_membresia }}){% endif %}</p>
+
+<div class="kpis">
+  <div class="kpi"><small>Compras</small><b>{{ c.compras }}</b></div>
+  <div class="kpi"><small>Total gastado</small><b>{{ c.total_gastado|dinero }}</b></div>
+  <div class="kpi"><small>Puntos</small><b>{{ c.puntos|entero }}</b></div>
+  <div class="kpi"><small>Crédito en tienda</small><b>{{ c.credito_tienda|dinero }}</b></div>
+  <div class="kpi"><small>GameStop Pro</small><b>{{ 'Vigente' if c.pro_vigente else 'No' }}</b>
+    <form method="post" action="{{ url_for('renovar_pro', id_cliente=c.id_cliente) }}" style="margin-top:8px">
+      <button class="chico">{{ 'Renovar' if c.nivel == 'GameStop Pro' else 'Contratar' }} Pro ($25/año)</button></form>
+  </div>
+</div>
+
+<div class="tarjeta tabla-scroll">
+  <h2>Historial de compras <small class="sub">(sp_historial_cliente)</small></h2>
+  <table>
+    <tr><th>Ticket</th><th>Fecha</th><th>Tienda</th><th>Producto</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">Desc.</th><th>Estado</th></tr>
+    {% for r in compras %}
+    <tr><td><a href="{{ url_for('venta', id_venta=r.id_venta) }}">#{{ r.id_venta }}</a></td><td>{{ r.fecha.strftime('%d/%m/%Y') }}</td>
+        <td>{{ r.tienda }}</td><td>{{ r.producto }}</td><td class="n">{{ r.cantidad }}</td>
+        <td class="n">{{ r.precio_unitario|dinero }}</td><td class="n">{{ r.descuento|dinero }}</td><td>{{ r.estado }}</td></tr>
+    {% else %}<tr><td colspan="8" class="sub">Sin compras</td></tr>{% endfor %}
+  </table>
+</div>
+
+<div class="rejilla r2">
+  <div class="tarjeta">
+    <h2>Intercambios</h2>
+    <table>
+      {% for i in intercambios %}
+      <tr><td>{{ i.fecha.strftime('%d/%m/%Y') }}<br><small class="sub">{{ i.tienda }}</small></td><td>{{ i.articulos }}</td>
+          <td>{{ i.forma_pago }}</td><td class="n">{{ i.total_pagado|dinero }}</td></tr>
+      {% else %}<tr><td class="sub">Sin intercambios</td></tr>{% endfor %}
+    </table>
+  </div>
+  <div class="tarjeta">
+    <h2>Preventas</h2>
+    <table>
+      {% for p in preventas %}
+      <tr><td>{{ p.fecha }}</td><td>{{ p.nombre }}</td><td class="n">{{ p.anticipo|dinero }}</td><td><span class="chip">{{ p.estado }}</span></td></tr>
+      {% else %}<tr><td class="sub">Sin preventas</td></tr>{% endfor %}
+    </table>
+  </div>
+</div>
+<a href="{{ url_for('clientes') }}">← Volver a clientes</a>
+{% endblock %}

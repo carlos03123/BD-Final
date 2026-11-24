@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block titulo %}Tablero{% endblock %}
+{% block contenido %}
+<h1>Tablero</h1>
+<p class="sub">10 tiendas en 7 estados · 1 de octubre al 23 de noviembre de 2026</p>
+
+<div class="kpis">
+  <div class="kpi"><small>Ventas totales</small><b>{{ kpi.total|dinero }}</b></div>
+  <div class="kpi"><small>Tickets</small><b>{{ kpi.tickets|entero }}</b></div>
+  <div class="kpi"><small>Ticket promedio</small><b>{{ kpi.promedio|dinero }}</b></div>
+  <div class="kpi"><small>Unidades vendidas</small><b>{{ kpi.unidades|entero }}</b></div>
+  <div class="kpi"><small>Impuesto cobrado</small><b>{{ kpi.impuesto|dinero }}</b></div>
+  <div class="kpi"><small>Clientes Pro vigentes</small><b>{{ kpi.pro }}</b></div>
+  <div class="kpi"><small>Inventario (precio venta)</small><b>{{ kpi.inventario|dinero }}</b></div>
+  <div class="kpi"><small>Productos bajo mínimo</small><b>{{ kpi.bajo_minimo|entero }}</b></div>
+</div>
+
+<div class="tarjeta">
+  <h2>Ventas diarias de la cadena</h2>
+  <canvas id="gDiarias" height="90"></canvas>
+</div>
+
+<div class="rejilla r3">
+  <div class="tarjeta"><h2>Ventas por tienda</h2><canvas id="gTiendas" height="150"></canvas></div>
+  <div class="tarjeta"><h2>Ingresos por categoría</h2><canvas id="gCategorias" height="220"></canvas></div>
+</div>
+
+<div class="rejilla r2">
+  <div class="tarjeta">
+    <h2>Productos más vendidos</h2>
+    <table>
+      <tr><th>Producto</th><th class="n">Unidades</th><th class="n">Ingreso</th><th class="n">Utilidad</th></tr>
+      {% for p in top %}
+      <tr><td>{{ p.nombre }}<br><small class="sub">{{ p.categoria }}</small></td>
+          <td class="n">{{ p.unidades_netas }}</td><td class="n">{{ p.ingreso_neto|dinero }}</td><td class="n">{{ p.utilidad_bruta|dinero }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="tarjeta">
+    <h2>Últimas ventas</h2>
+    <table>
+      <tr><th>Ticket</th><th>Tienda</th><th>Cliente</th><th class="n">Total</th></tr>
+      {% for v in ultimas %}
+      <tr><td><a href="{{ url_for('venta', id_venta=v.id_venta) }}">#{{ v.id_venta }}</a><br><small class="sub">{{ v.fecha.strftime('%d/%m %H:%M') }}</small></td>
+          <td>{{ v.tienda }}</td><td>{{ v.cliente }}</td><td class="n">{{ v.total|dinero }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const G = {{ graficas|safe }};
+new Chart(gDiarias, {
+  type: 'line',
+  data: { labels: G.diarias.map(d => d.dia),
+          datasets: [{ label: 'Ventas', data: G.diarias.map(d => d.total), borderColor: ROJO, backgroundColor: 'rgba(214,0,28,.08)', fill: true, tension: .3, pointRadius: 2 }] },
+  options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: usd } } } }
+});
+new Chart(gTiendas, {
+  type: 'bar',
+  data: { labels: G.tiendas.map(t => t.tienda.replace('GameStop ', '') + ' (' + t.estado + ')'),
+          datasets: [{ label: 'Total cobrado', data: G.tiendas.map(t => t.total_cobrado), backgroundColor: NEGRO, borderRadius: 4 }] },
+  options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { callback: usd } } } }
+});
+new Chart(gCategorias, {
+  type: 'doughnut',
+  data: { labels: G.categorias.map(c => c.categoria), datasets: [{ data: G.categorias.map(c => c.ingreso), backgroundColor: PALETA }] },
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+{% endblock %}

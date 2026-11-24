@@ -9,7 +9,22 @@ Está hecha de dos formas:
 | 🐬 **Relacional** | MySQL 8.0 | MySQL Workbench |
 | 🍃 **Documental** | MongoDB 6+ | mongosh / MongoDB Compass |
 
+Incluye además una **interfaz web en Flask**, los **scripts de migración y validación** MySQL → MongoDB y la documentación de **análisis**.
+
+![Tablero de la interfaz web](docs/capturas/tablero.png)
+
 Las dos versiones tienen **exactamente los mismos datos**, del 1 de octubre al 23 de noviembre de 2026, que incluye el lanzamiento de GTA VI y las ofertas anticipadas de Black Friday.
+
+
+## ✅ Cómo cubre la rúbrica del proyecto
+
+| Criterio | Dónde está |
+|---|---|
+| **Análisis** | [`docs/analisis.md`](docs/analisis.md): problema, objetivos, actores, 15 requerimientos funcionales, 16 reglas de negocio, requerimientos no funcionales, casos de uso y entidades |
+| **Estructura de la BD** | [`mysql/01_esquema.sql`](mysql/01_esquema.sql) con 22 tablas, el diagrama E-R (abajo), el [diccionario de datos](docs/diccionario_datos.md) y la [normalización 1FN–3FN](docs/normalizacion.md) |
+| **Funciones, procedimientos, consultas y reportes** | 4 funciones y 9 triggers ([`02`](mysql/02_funciones_triggers.sql)), 9 procedimientos ([`03`](mysql/03_procedimientos.sql)), 7 vistas ([`05`](mysql/05_vistas.sql)), 30 consultas ([`06`](mysql/06_consultas.sql)), seguridad ([`07`](mysql/07_seguridad.sql)), pruebas ([`08`](mysql/08_pruebas.sql)) y 8 reportes exportables a CSV en la interfaz |
+| **Migración, estructura NoSQL y validación** | [`migracion/migrar.py`](migracion/migrar.py) convierte las 22 tablas en 10 colecciones. [`mongodb/01_colecciones.js`](mongodb/01_colecciones.js) tiene validación `$jsonSchema`, índices y vistas. [`migracion/validar.py`](migracion/validar.py) hace 52 pruebas de que MySQL y MongoDB coinciden |
+| **Presentación (UI) y cierre (repo)** | Interfaz web en [`app/`](app/) y este repositorio documentado |
 
 ---
 
@@ -28,12 +43,24 @@ BD-Final/
 │   └── 08_pruebas.sql               Pruebas de reglas de negocio y transacciones
 ├── mongodb/
 │   ├── 01_colecciones.js            Colecciones con $jsonSchema, índices y vistas
-│   ├── 02_datos.js                  Los mismos datos que MySQL
+│   ├── 02_datos.js                  Los mismos datos que MySQL (generado por migracion/migrar.py)
 │   ├── 03_operaciones.js            Reglas de negocio en JavaScript + pruebas
 │   └── 04_consultas.js              Consultas y agregaciones
-└── docs/
-    ├── diccionario_datos.md         Todas las columnas de todas las tablas
-    └── normalizacion.md             1FN, 2FN, 3FN y diseño documental
+├── migracion/
+│   ├── migrar.py                    MySQL → MongoDB (directo o generando 02_datos.js)
+│   ├── validar.py                   52 pruebas: conteos, totales, referencias, $jsonSchema
+│   └── conexion.py                  Datos de conexión por variables de entorno
+├── app/                             Interfaz web (Flask)
+│   ├── app.py                       Rutas: tablero, ventas, catálogo, inventario, clientes, reportes
+│   ├── db.py
+│   ├── templates/                   Páginas HTML
+│   └── static/                      Estilos y Chart.js (funciona sin internet)
+├── docs/
+│   ├── analisis.md                  Problema, requerimientos, reglas de negocio, casos de uso
+│   ├── diccionario_datos.md         Todas las columnas de todas las tablas
+│   ├── normalizacion.md             1FN, 2FN, 3FN y diseño documental
+│   └── capturas/                    Capturas de la interfaz
+└── requirements.txt                 flask, pymysql, pymongo
 ```
 
 ## 📊 Contenido
@@ -267,6 +294,64 @@ mongosh mongodb/03_operaciones.js   # opcional: modifica datos
 ```
 
 En **MongoDB Compass**: abre la pestaña **Mongosh** (abajo), pega el contenido de cada archivo en ese orden y presiona Enter.
+
+---
+
+## 🔄 Migración y validación (MySQL → MongoDB)
+
+Primero carga MySQL (archivos `01` a `05`) y crea las colecciones con `mongosh mongodb/01_colecciones.js`. Después:
+
+```bash
+pip install -r requirements.txt
+
+# Windows (PowerShell):  $env:MYSQL_PASSWORD="tu_contraseña"
+# Mac / Linux:           export MYSQL_PASSWORD="tu_contraseña"
+
+python migracion/migrar.py                                     # migra las 22 tablas a 10 colecciones
+python migracion/validar.py --reporte docs/reporte_validacion.md
+```
+
+`migrar.py` **transforma** el modelo: los empleados quedan dentro de su tienda, el inventario y los géneros dentro del producto, y los artículos y devoluciones dentro de la venta. Como las colecciones tienen validadores `$jsonSchema`, MongoDB rechaza cualquier documento mal formado durante la migración. `mongodb/02_datos.js` se generó con este mismo script (`python migracion/migrar.py --js mongodb/02_datos.js`).
+
+`validar.py` compara las dos bases y genera un reporte con:
+
+- **Conteos** de cada tabla contra su colección o arreglo embebido.
+- **Totales**: ventas, impuestos, reembolsos, inventario, puntos y crédito, en general, por tienda, por producto y por cliente.
+- **Integridad referencial** dentro de MongoDB: que no haya referencias huérfanas.
+- Que **ningún documento viole su `$jsonSchema`**.
+- **25 ventas al azar** comparadas campo por campo.
+
+Variables de conexión opcionales: `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER` (por defecto `root`), `MYSQL_DB`, `MONGO_URI` (por defecto `mongodb://localhost:27017`).
+
+---
+
+## 🖥️ Interfaz web
+
+```bash
+pip install -r requirements.txt
+# define MYSQL_PASSWORD como arriba
+python app/app.py
+```
+
+Luego abre **http://127.0.0.1:5000**.
+
+| Página | Qué hace | Objetos de la BD que usa |
+|---|---|---|
+| **Tablero** | Indicadores, ventas diarias, ventas por tienda y por categoría, productos más vendidos | `v_ventas_diarias`, `sp_reporte_ventas`, `v_ventas_producto`, `v_inventario_valorizado`, `fn_es_pro` |
+| **Nueva venta** | Registra una venta con varios productos y muestra la existencia en vivo. Si una regla no se cumple, muestra el mensaje del trigger | `sp_registrar_venta` (transacción + JSON) y todos los triggers de venta |
+| **Ventas / Ticket** | Lista con filtros, detalle del ticket y registro de devoluciones | `v_tickets`, triggers de devolución |
+| **Catálogo** | Búsqueda y filtros; cambio de precio | `v_catalogo`, `trg_productos_bu`, `trg_productos_au` (bitácora) |
+| **Inventario** | Existencias por tienda, alertas de mínimo, reabasto automático, recepción de órdenes y transferencias | `sp_generar_reabasto`, `sp_recibir_orden`, `sp_transferir_inventario` |
+| **Clientes** | Gasto, puntos, crédito y vigencia Pro; historial, intercambios, preventas; renovar Pro | `v_clientes_resumen`, `sp_historial_cliente`, `sp_renovar_pro` |
+| **Reportes** | 8 reportes con gráfica y descarga en **CSV** (abre en Excel) | `sp_reporte_ventas`, vistas y consultas con `RANK()` |
+| **MySQL vs MongoDB** | Compara en vivo las dos bases y muestra un documento de ejemplo | MySQL + MongoDB |
+
+| | |
+|---|---|
+| ![Nueva venta rechazada por un trigger](docs/capturas/nueva_venta_rechazada.png) | ![Inventario](docs/capturas/inventario.png) |
+| *La base de datos rechaza una venta sin existencia* | *Inventario con alertas de reabasto* |
+| ![Reportes](docs/capturas/reportes.png) | ![Cliente](docs/capturas/cliente.png) |
+| *Reportes exportables a CSV* | *Ficha del cliente* |
 
 ---
 

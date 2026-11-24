@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}MySQL vs MongoDB{% endblock %}
+{% block contenido %}
+<h1>MySQL vs MongoDB</h1>
+<p class="sub">Compara en vivo los datos de las dos bases después de la migración (<code>python migracion/migrar.py</code>).
+La validación completa (52 pruebas) está en <code>python migracion/validar.py</code>.</p>
+
+{% if error %}
+<div class="aviso error">No se pudo conectar a MongoDB: {{ error }}</div>
+<div class="tarjeta">
+  <h2>Para activar esta página</h2>
+  <ol>
+    <li>Inicia MongoDB (o usa MongoDB Atlas) y ejecuta <code>mongosh mongodb/01_colecciones.js</code></li>
+    <li>Migra los datos: <code>python migracion/migrar.py</code></li>
+    <li>Si no es local, define <code>MONGO_URI</code> antes de iniciar la app</li>
+  </ol>
+</div>
+{% else %}
+<div class="tarjeta">
+  <table>
+    <tr><th>Dato</th><th class="n">MySQL</th><th class="n">MongoDB</th><th></th></tr>
+    {% for c in comparacion %}
+    <tr><td>{{ c.nombre }}</td><td class="n">{{ c.mysql }}</td><td class="n">{{ c.mongo }}</td>
+        <td>{% if c.ok %}<span class="chip verde">Coincide</span>{% else %}<span class="chip rojo">Diferente</span>{% endif %}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% if ejemplo %}
+<div class="tarjeta">
+  <h2>Ejemplo de documento: una venta con su devolución embebida</h2>
+  <p class="sub">En MySQL esta misma información ocupa 4 tablas: ventas, detalle_venta, devoluciones y detalle_devolucion.</p>
+  <pre>{{ ejemplo }}</pre>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

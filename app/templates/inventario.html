@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block titulo %}Inventario{% endblock %}
+{% block contenido %}
+<h1>Inventario · {{ tienda.nombre }}</h1>
+<p class="sub">Tienda #{{ tienda.numero_tienda }} · {{ tienda.direccion }}, {{ tienda.ciudad }}, {{ tienda.abreviatura }} {{ tienda.codigo_postal }}</p>
+
+<form class="filtros">
+  <label>Tienda
+    <select name="tienda" onchange="this.form.submit()">
+      {% for t in tiendas %}<option value="{{ t.id_sucursal }}" {{ 'selected' if t.id_sucursal == tienda.id_sucursal }}>{{ t.nombre }} ({{ t.abreviatura }})</option>{% endfor %}
+    </select></label>
+  <label>Mostrar
+    <select name="bajo" onchange="this.form.submit()">
+      <option value="">Todo el inventario</option><option value="1" {{ 'selected' if solo_bajo }}>Solo bajo el mínimo</option>
+    </select></label>
+</form>
+
+{% if valor %}
+<div class="kpis">
+  <div class="kpi"><small>Piezas</small><b>{{ valor.piezas|entero }}</b></div>
+  <div class="kpi"><small>Valor a costo</small><b>{{ valor.valor_costo|dinero }}</b></div>
+  <div class="kpi"><small>Valor a precio de venta</small><b>{{ valor.valor_venta|dinero }}</b></div>
+  <div class="kpi"><small>Bajo el mínimo</small><b>{{ valor.productos_bajo_minimo|entero }}</b></div>
+</div>
+{% endif %}
+
+<div class="rejilla r3">
+  <div class="tarjeta tabla-scroll">
+    <h2>Existencias</h2>
+    <table>
+      <tr><th>SKU</th><th>Producto</th><th>Condición</th><th class="n">Precio</th><th class="n">Existencia</th><th class="n">Mínimo</th></tr>
+      {% for r in filas %}
+      <tr class="{{ 'alerta' if r.bajo }}">
+        <td><code>{{ r.sku }}</code></td><td>{{ r.nombre }}<br><small class="sub">{{ r.categoria }}</small></td>
+        <td>{{ r.condicion }}</td><td class="n">{{ r.precio_venta|dinero }}</td>
+        <td class="n"><b>{{ r.existencia }}</b> {% if r.bajo %}<span class="chip rojo">Reabastecer</span>{% endif %}</td>
+        <td class="n">{{ r.stock_minimo }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div>
+    <div class="tarjeta">
+      <h2>Reabasto automático</h2>
+      <p class="sub">Ejecuta <code>sp_generar_reabasto</code>: con un cursor crea una orden por proveedor para todo lo que está bajo el mínimo.</p>
+      <form method="post" action="{{ url_for('reabasto', id_tienda=tienda.id_sucursal) }}"><button>Generar órdenes de compra</button></form>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Transferir a otra tienda</h2>
+      <p class="sub"><code>sp_transferir_inventario</code> (transacción)</p>
+      <form method="post" action="{{ url_for('transferir') }}" style="display:grid;gap:10px">
+        <input type="hidden" name="origen" value="{{ tienda.id_sucursal }}">
+        <label>SKU <input name="sku" required placeholder="CON-PS5-SLM"></label>
+        <label>Cantidad <input name="cantidad" type="number" min="1" value="1" required></label>
+        <label>Destino
+          <select name="destino">{% for t in tiendas if t.id_sucursal != tienda.id_sucursal %}<option value="{{ t.id_sucursal }}">{{ t.nombre }}</option>{% endfor %}</select></label>
+        <button>Transferir</button>
+      </form>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Órdenes de compra</h2>
+      <table>
+        <tr><th>Orden</th><th>Proveedor</th><th class="n">Total</th><th></th></tr>
+        {% for o in ordenes %}
+        <tr><td>#{{ o.id_orden }}<br><small class="sub">{{ o.fecha }}</small></td>
+            <td>{{ o.proveedor }}<br><small class="sub">{{ o.productos }} productos · {{ o.piezas }} piezas</small></td>
+            <td class="n">{{ o.total|dinero }}</td>
+            <td>{% if o.estado == 'Pendiente' %}
+                  <form method="post" action="{{ url_for('recibir_orden', id_orden=o.id_orden) }}"><button class="chico">Recibir</button></form>
+                {% else %}<span class="chip {{ 'verde' if o.estado == 'Recibida' else 'rojo' }}">{{ o.estado }}</span>{% endif %}</td></tr>
+        {% else %}<tr><td colspan="4" class="sub">Sin órdenes</td></tr>{% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Reportes{% endblock %}
+{% block contenido %}
+<h1>Reportes</h1>
+<p class="sub">Cada reporte sale de un procedimiento, una vista o una consulta de la base de datos y se puede descargar en CSV (abre en Excel).</p>
+
+<div class="tabs">
+  {% for clave, (t, _) in reportes.items() %}
+  <a href="{{ url_for('reportes', r=clave, desde=desde, hasta=hasta) }}" class="{{ 'activo' if clave == nombre }}">{{ t }}</a>
+  {% endfor %}
+</div>
+
+<form class="filtros">
+  <input type="hidden" name="r" value="{{ nombre }}">
+  <label>Desde <input type="date" name="desde" value="{{ desde }}"></label>
+  <label>Hasta <input type="date" name="hasta" value="{{ hasta }}"></label>
+  <button>Aplicar</button>
+  <a class="boton sec" href="{{ url_for('reporte_csv', nombre=nombre, desde=desde, hasta=hasta) }}">⬇ Descargar CSV</a>
+</form>
+
+<div class="tarjeta">
+  <h2>{{ titulo }}</h2>
+  <canvas id="gReporte" height="80"></canvas>
+</div>
+
+<div class="tarjeta tabla-scroll">
+  {% if filas %}
+  <table>
+    <tr>{% for k in filas[0].keys() %}<th class="{{ 'n' if filas[0][k] is number }}">{{ k|replace('_', ' ') }}</th>{% endfor %}</tr>
+    {% for f in filas %}
+    <tr>{% for k, v in f.items() %}
+      <td class="{{ 'n' if v is number }}">{% if v is number and (k in ['total', 'ingreso', 'ventas_netas', 'impuesto', 'total_cobrado', 'ticket_promedio', 'total_vendido', 'ingreso_neto', 'utilidad_bruta', 'valor_costo', 'valor_venta', 'monto_reembolsado', 'precio_anterior', 'precio_nuevo']) %}{{ v|dinero }}{% else %}{{ v if v is not none else '' }}{% endif %}</td>
+    {% endfor %}</tr>
+    {% endfor %}
+  </table>
+  {% else %}<p class="sub">Sin datos en el periodo.</p>{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const F = {{ grafica|safe }};
+if (F.length) {
+  const llaves = Object.keys(F[0]);
+  const etiqueta = llaves.find(k => typeof F[0][k] === 'string' && !/sku|fecha|usuario|puesto/.test(k)) || llaves[0];
+  const valor = ['total_cobrado', 'ingreso', 'ventas_netas', 'total_vendido', 'utilidad_bruta', 'valor_venta', 'monto_reembolsado', 'cambio_pct']
+                  .find(k => k in F[0]) || llaves.find(k => typeof F[0][k] === 'number');
+  const datos = F.slice(0, 15);
+  new Chart(gReporte, {
+    type: 'bar',
+    data: { labels: datos.map(d => String(d[etiqueta]).replace('GameStop ', '')),
+            datasets: [{ label: valor.replace(/_/g, ' '), data: datos.map(d => d[valor]), backgroundColor: ROJO, borderRadius: 4 }] },
+    options: { plugins: { legend: { display: false } } }
+  });
+} else { gReporte.remove(); }
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Clientes{% endblock %}
+{% block contenido %}
+<h1>Clientes</h1>
+<p class="sub">Vista <code>v_clientes_resumen</code>. "Pro vigente" se calcula con la función <code>fn_es_pro</code>.</p>
+<form class="filtros">
+  <label>Buscar <input name="q" value="{{ q }}" placeholder="Nombre o correo"></label>
+  <label>Nivel <select name="nivel"><option value="">Todos</option>
+    {% for n in ['PowerUp Rewards', 'GameStop Pro'] %}<option {{ 'selected' if nivel == n }}>{{ n }}</option>{% endfor %}</select></label>
+  <button>Filtrar</button>
+</form>
+<div class="tarjeta tabla-scroll">
+  <table>
+    <tr><th>Cliente</th><th>Estado</th><th>Nivel</th><th>Vence</th><th class="n">Compras</th><th class="n">Total gastado</th>
+        <th class="n">Puntos</th><th class="n">Crédito</th><th>Última compra</th></tr>
+    {% for c in filas %}
+    <tr>
+      <td><a href="{{ url_for('cliente', id_cliente=c.id_cliente) }}">{{ c.cliente }}</a><br><small class="sub">{{ c.correo }}</small></td>
+      <td>{{ c.estado_eua }}</td>
+      <td>{% if c.nivel == 'GameStop Pro' %}<span class="chip {{ 'negro' if c.pro_vigente else 'rojo' }}">Pro{{ '' if c.pro_vigente else ' vencido' }}</span>
+          {% else %}<span class="chip">PowerUp</span>{% endif %}</td>
+      <td>{{ c.vencimiento_membresia or '' }}</td>
+      <td class="n">{{ c.compras }}</td><td class="n">{{ c.total_gastado|dinero }}</td>
+      <td class="n">{{ c.puntos|entero }}</td><td class="n">{{ c.credito_tienda|dinero }}</td>
+      <td>{{ c.ultima_compra.strftime('%d/%m/%Y') if c.ultima_compra else '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

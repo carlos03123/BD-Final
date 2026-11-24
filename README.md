@@ -30,7 +30,7 @@ Las dos versiones tienen **exactamente los mismos datos**, del 1 de octubre al 2
 | **Análisis** | [`docs/analisis.md`](docs/analisis.md): problema, objetivos, actores, 15 requerimientos funcionales, 16 reglas de negocio, requerimientos no funcionales, casos de uso y entidades |
 | **Estructura de la BD** | [`mysql/01_esquema.sql`](mysql/01_esquema.sql) con 22 tablas, el diagrama E-R (abajo), el [diccionario de datos](docs/diccionario_datos.md) y la [normalización 1FN–3FN](docs/normalizacion.md) |
 | **Funciones, procedimientos, consultas y reportes** | 4 funciones y 9 triggers ([`02`](mysql/02_funciones_triggers.sql)), 9 procedimientos ([`03`](mysql/03_procedimientos.sql)), 7 vistas ([`05`](mysql/05_vistas.sql)), 30 consultas ([`06`](mysql/06_consultas.sql)), seguridad ([`07`](mysql/07_seguridad.sql)), pruebas ([`08`](mysql/08_pruebas.sql)) y 8 reportes exportables a CSV en la interfaz |
-| **Migración, estructura NoSQL y validación** | [`migracion/migrar.py`](migracion/migrar.py) convierte las 22 tablas en 10 colecciones. [`mongodb/01_colecciones.js`](mongodb/01_colecciones.js) tiene validación `$jsonSchema`, índices y vistas. [`migracion/validar.py`](migracion/validar.py) hace 52 pruebas de que MySQL y MongoDB coinciden |
+| **Migración, estructura NoSQL y validación** | [`migracion/migrar.py`](migracion/migrar.py) convierte las 22 tablas en 10 colecciones. [`mongodb/01_colecciones.js`](mongodb/01_colecciones.js) tiene validación `$jsonSchema`, índices y vistas. [`migracion/validar.py`](migracion/validar.py) comprueba que MySQL y MongoDB coinciden: [reporte con 61/61 pruebas correctas](docs/reporte_validacion.md) |
 | **Presentación (UI) y cierre (repo)** | Interfaz web en [`app/`](app/) y este repositorio documentado |
 
 ---
@@ -55,7 +55,7 @@ BD-Final/
 │   └── 04_consultas.js              Consultas y agregaciones
 ├── migracion/
 │   ├── migrar.py                    MySQL → MongoDB (directo o generando 02_datos.js)
-│   ├── validar.py                   52 pruebas: conteos, totales, referencias, $jsonSchema
+│   ├── validar.py                   61 pruebas: conteos, totales, referencias, $jsonSchema
 │   └── conexion.py                  Datos de conexión por variables de entorno
 ├── app/                             Interfaz web (Flask)
 │   ├── app.py                       Rutas: tablero, ventas, catálogo, inventario, clientes, reportes
@@ -64,6 +64,9 @@ BD-Final/
 │   └── static/                      Estilos y Chart.js (funciona sin internet)
 ├── docs/
 │   ├── analisis.md                  Problema, requerimientos, reglas de negocio, casos de uso
+│   ├── diagrama_eer.png             Diagrama EER generado en MySQL Workbench
+│   ├── modelo_gamestop.mwb          Modelo para abrir en Workbench
+│   ├── reporte_validacion.md        Resultado de validar.py (61/61 pruebas)
 │   ├── diccionario_datos.md         Todas las columnas de todas las tablas
 │   ├── normalizacion.md             1FN, 2FN, 3FN y diseño documental
 │   └── capturas/                    Capturas de la interfaz
@@ -89,6 +92,13 @@ BD-Final/
 ## 🐬 MySQL
 
 ### Diagrama entidad-relación
+
+Diagrama EER generado con MySQL Workbench (*Database → Reverse Engineer*) a partir de la base `gamestop_usa`. El modelo se puede abrir en Workbench desde [`docs/modelo_gamestop.mwb`](docs/modelo_gamestop.mwb).
+
+![Diagrama EER generado en MySQL Workbench](docs/diagrama_eer.png)
+
+<details>
+<summary>Versión simplificada del diagrama (Mermaid)</summary>
 
 ```mermaid
 erDiagram
@@ -183,6 +193,8 @@ erDiagram
                        decimal precio_nuevo
                        varchar usuario }
 ```
+
+</details>
 
 Las columnas de todas las tablas están en el [diccionario de datos](docs/diccionario_datos.md), y la justificación del modelo en [normalización](docs/normalizacion.md).
 

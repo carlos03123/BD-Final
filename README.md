@@ -16,6 +16,13 @@ Incluye además una **interfaz web en Flask**, los **scripts de migración y val
 Las dos versiones tienen **exactamente los mismos datos**, del 1 de octubre al 23 de noviembre de 2026, que incluye el lanzamiento de GTA VI y las ofertas anticipadas de Black Friday.
 
 
+## 👥 Equipo
+
+| Integrante | GitHub |
+|---|---|
+| Carlos | [@carlos03123](https://github.com/carlos03123) |
+| Celeste Grageda | [@celestegrageda](https://github.com/celestegrageda) |
+
 ## ✅ Cómo cubre la rúbrica del proyecto
 
 | Criterio | Dónde está |

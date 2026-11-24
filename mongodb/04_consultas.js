@@ -183,7 +183,8 @@ show("E1. Top 3 productos de CADA tienda ($setWindowFields = ROW_NUMBER)",
   db.ventas.aggregate([
     { $unwind: "$articulos" },
     { $group: { _id: { tienda: "$sucursal.nombre", producto: "$articulos.nombre" }, unidades: { $sum: "$articulos.cantidad" } } },
-    { $setWindowFields: { partitionBy: "$_id.tienda", sortBy: { unidades: -1, "_id.producto": 1 },
+    // $documentNumber solo acepta un campo en sortBy
+    { $setWindowFields: { partitionBy: "$_id.tienda", sortBy: { unidades: -1 },
                           output: { lugar: { $documentNumber: {} } } } },
     { $match: { lugar: { $lte: 3 } } },
     { $project: { _id: 0, tienda: "$_id.tienda", producto: "$_id.producto", unidades: 1, lugar: 1 } },

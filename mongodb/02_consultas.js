@@ -1,69 +1,106 @@
 // =====================================================================
-//  Consultas de ejemplo (MongoDB)
+//  Consultas de ejemplo (MongoDB) - gamestop
 //  Ejecutar con:  mongosh mongodb/02_consultas.js
 // =====================================================================
 
-db = db.getSiblingDB("videojuegos");
+db = db.getSiblingDB("gamestop");
 const show = (titulo, cursor) => { print("\n=== " + titulo + " ==="); printjson(cursor.toArray()); };
 
-// 1. Juegos Soulslike disponibles en PC
-show("Soulslike en PC",
-  db.videojuegos.find(
-    { generos: "Soulslike", "plataformas.nombre": "PC" },
-    { _id: 0, titulo: 1, "desarrolladora.nombre": 1 }
-  ));
+// 1. Juegos de PlayStation 5 nuevos, del más barato al más caro
+show("Juegos PS5 nuevos",
+  db.productos.find(
+    { categoria: "Videojuego", plataforma: "PlayStation 5", condicion: "Nuevo" },
+    { _id: 1, nombre: 1, precio_venta: 1 }
+  ).sort({ precio_venta: 1 }));
 
-// 2. Top 5 juegos mejor calificados (une resenas con videojuegos)
-show("Top 5 por calificación",
-  db.resenas.aggregate([
-    { $group: { _id: "$juego", promedio: { $avg: "$calificacion" }, num_resenas: { $sum: 1 } } },
-    { $lookup: { from: "videojuegos", localField: "_id", foreignField: "_id", as: "juego" } },
-    { $unwind: "$juego" },
-    { $project: { _id: 0, titulo: "$juego.titulo", promedio: { $round: ["$promedio", 2] }, num_resenas: 1 } },
-    { $sort: { promedio: -1, num_resenas: -1 } },
+// 2. Existencia total de cada producto en la cadena
+show("Existencia total",
+  db.productos.aggregate([
+    { $project: { nombre: 1, categoria: 1, existencia_total: { $sum: "$inventario.existencia" } } },
+    { $sort: { categoria: 1, nombre: 1 } }
+  ]));
+
+// 3. Ventas por sucursal en noviembre 2026
+show("Ventas por sucursal",
+  db.ventas.aggregate([
+    { $match: { fecha: { $gte: new Date("2026-11-01"), $lt: new Date("2026-12-01") } } },
+    { $group: { _id: "$sucursal", num_ventas: { $sum: 1 }, total_vendido: { $sum: "$total" },
+                ticket_promedio: { $avg: "$total" } } },
+    { $lookup: { from: "sucursales", localField: "_id", foreignField: "_id", as: "s" } },
+    { $project: { _id: 0, sucursal: { $first: "$s.nombre" }, num_ventas: 1, total_vendido: 1,
+                  ticket_promedio: { $round: ["$ticket_promedio", 2] } } },
+    { $sort: { total_vendido: -1 } }
+  ]));
+
+// 4. Top 5 productos más vendidos
+show("Top 5 más vendidos",
+  db.ventas.aggregate([
+    { $unwind: "$articulos" },
+    { $group: { _id: "$articulos.nombre", unidades: { $sum: "$articulos.cantidad" },
+                ingreso: { $sum: { $multiply: ["$articulos.cantidad", "$articulos.precio_unitario"] } } } },
+    { $sort: { unidades: -1, ingreso: -1 } },
     { $limit: 5 }
   ]));
 
-// 3. Cantidad de juegos por género
-show("Juegos por género",
-  db.videojuegos.aggregate([
-    { $unwind: "$generos" },
-    { $group: { _id: "$generos", total: { $sum: 1 } } },
-    { $sort: { total: -1 } }
+// 5. Ranking de vendedores (empleado embebido en sucursales)
+show("Ranking de vendedores",
+  db.ventas.aggregate([
+    { $group: { _id: "$empleado", ventas: { $sum: 1 }, total_vendido: { $sum: "$total" } } },
+    { $lookup: { from: "sucursales", localField: "_id", foreignField: "empleados._id", as: "s" } },
+    { $unwind: "$s" },
+    { $project: { _id: 0, ventas: 1, total_vendido: 1, sucursal: "$s.nombre",
+        empleado: { $first: { $map: {
+          input: { $filter: { input: "$s.empleados", cond: { $eq: ["$$this._id", "$_id"] } } },
+          in: "$$this.nombre" } } } } },
+    { $sort: { total_vendido: -1 } }
   ]));
 
-// 4. Juegos y precio promedio por plataforma
-show("Por plataforma",
-  db.videojuegos.aggregate([
-    { $unwind: "$plataformas" },
-    { $group: { _id: "$plataformas.nombre", juegos: { $sum: 1 }, precio_promedio: { $avg: "$plataformas.precio_usd" } } },
-    { $project: { juegos: 1, precio_promedio: { $round: ["$precio_promedio", 2] } } },
-    { $sort: { juegos: -1 } }
+// 6. Clientes Pro vs Básica
+show("Pro vs Básica",
+  db.ventas.aggregate([
+    { $match: { cliente: { $ne: null } } },
+    { $lookup: { from: "clientes", localField: "cliente", foreignField: "_id", as: "c" } },
+    { $group: { _id: { $first: "$c.membresia" }, compras: { $sum: 1 },
+                total_gastado: { $sum: "$total" }, descuentos: { $sum: "$descuento" } } }
   ]));
 
-// 5. Horas totales jugadas por usuario
-show("Horas por usuario",
-  db.usuarios.aggregate([
-    { $project: {
-        horas_totales: { $sum: "$biblioteca.horas_jugadas" },
-        completados: { $size: { $filter: { input: "$biblioteca", cond: "$$this.completado" } } } } },
-    { $sort: { horas_totales: -1 } }
+// 7. Productos con stock bajo en Plaza Río (sucursal 1)
+show("Stock bajo en Plaza Río",
+  db.productos.aggregate([
+    { $unwind: "$inventario" },
+    { $match: { "inventario.sucursal": 1,
+                $expr: { $lte: ["$inventario.existencia", "$inventario.stock_minimo"] } } },
+    { $project: { nombre: 1, existencia: "$inventario.existencia", minimo: "$inventario.stock_minimo" } },
+    { $sort: { existencia: 1 } }
   ]));
 
-// 6. Biblioteca de un usuario con el título de cada juego
-show("Biblioteca de carlos_gamer",
-  db.usuarios.aggregate([
-    { $match: { _id: "carlos_gamer" } },
-    { $unwind: "$biblioteca" },
-    { $lookup: { from: "videojuegos", localField: "biblioteca.juego", foreignField: "_id", as: "j" } },
-    { $project: { _id: 0, titulo: { $first: "$j.titulo" }, plataforma: "$biblioteca.plataforma",
-                  horas: "$biblioteca.horas_jugadas", completado: "$biblioteca.completado" } },
-    { $sort: { horas: -1 } }
+// 8. Historial de compras de un cliente
+show("Historial de Mariana López",
+  db.clientes.aggregate([
+    { $match: { correo: "mariana.lopez@correo.com" } },
+    { $lookup: { from: "ventas", localField: "_id", foreignField: "cliente", as: "compras" } },
+    { $unwind: "$compras" },
+    { $project: { _id: 0, fecha: "$compras.fecha", articulos: "$compras.articulos.nombre", total: "$compras.total" } },
+    { $sort: { fecha: -1 } }
   ]));
 
-// 7. Ejemplos de CRUD
+// 9. Preventas pendientes por producto
+show("Preventas pendientes",
+  db.preventas.aggregate([
+    { $match: { estado: "Pendiente" } },
+    { $group: { _id: "$producto", apartados: { $sum: 1 }, anticipos: { $sum: "$anticipo" } } },
+    { $lookup: { from: "productos", localField: "_id", foreignField: "_id", as: "p" } },
+    { $project: { producto: { $first: "$p.nombre" }, apartados: 1, anticipos: 1 } }
+  ]));
+
+// 10. Ejemplos de CRUD
 print("\n=== CRUD ===");
-db.usuarios.updateOne({ _id: "diego_noob" }, { $inc: { "biblioteca.$[b].horas_jugadas": 5 } },
-                      { arrayFilters: [{ "b.juego": "minecraft" }] });
-db.videojuegos.updateOne({ _id: "hollow-knight" }, { $addToSet: { generos: "Aventura" } });
-printjson(db.videojuegos.findOne({ _id: "hollow-knight" }, { titulo: 1, generos: 1 }));
+// Subir de precio un producto
+db.productos.updateOne({ _id: "VJ-PS5-FC26" }, { $set: { precio_venta: 1499 } });
+// Reabastecer 5 consolas PS5 en Ensenada
+db.productos.updateOne({ _id: "CON-PS5-SLM", "inventario.sucursal": 4 }, { $inc: { "inventario.$.existencia": 5 } });
+// Convertir a un cliente en Pro
+db.clientes.updateOne({ _id: 3 }, { $set: { membresia: "Pro" } });
+// Marcar una preventa como entregada
+db.preventas.updateOne({ cliente: 1, producto: "ACC-PS5-DSE" }, { $set: { estado: "Entregada" } });
+printjson(db.productos.findOne({ _id: "CON-PS5-SLM" }, { nombre: 1, inventario: 1 }));

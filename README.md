@@ -1,23 +1,24 @@
-# 🎮 Base de datos de videojuegos
+# 🎮 BD-Final: Base de datos de una tienda GameStop
 
-La misma base de datos de videojuegos hecha de dos formas:
+La base de datos de una cadena de tiendas de videojuegos tipo **GameStop** con 4 sucursales en Baja California, hecha de dos formas:
 
-- **MySQL (relacional)**: lista para abrir y ejecutar en **MySQL Workbench**
-- **MongoDB (documental)**: lista para ejecutar en **mongosh** o **MongoDB Compass**
+- **MySQL (relacional)**: para abrir y ejecutar en **MySQL Workbench**
+- **MongoDB (documental)**: para ejecutar en **mongosh** o **MongoDB Compass**
 
-Guarda videojuegos con su estudio, distribuidora, géneros y plataformas (con fecha y precio por plataforma), además de usuarios, la biblioteca de juegos de cada uno (horas jugadas, si lo completó) y sus reseñas.
+Guarda las sucursales y sus empleados, los clientes con membresía (Básica o **Pro** con 10% de descuento y puntos), el catálogo (videojuegos nuevos y usados, consolas, accesorios, coleccionables y tarjetas de regalo), el inventario de cada sucursal, las **ventas**, los **intercambios** (cuando el cliente vende sus juegos usados a la tienda) y las **preventas**.
 
 ## 📁 Estructura
 
 ```
-bd-videojuegos/
+BD-Final/
 ├── mysql/
-│   ├── 01_esquema.sql                          # Crea la BD y las tablas
-│   ├── 02_datos.sql                            # Datos de ejemplo
-│   └── 03_vistas_procedimientos_consultas.sql  # Vistas, procedimiento, trigger y consultas
+│   ├── 01_esquema.sql                 # Crea la BD "gamestop" y sus 14 tablas
+│   ├── 02_triggers_procedimientos.sql # 3 triggers, 1 función, 3 procedimientos
+│   ├── 03_datos.sql                   # Datos de ejemplo
+│   └── 04_vistas_consultas.sql        # 3 vistas y 13 consultas
 └── mongodb/
-    ├── 01_crear_bd.js                          # Crea colecciones, validación, datos e índices
-    └── 02_consultas.js                         # Consultas y agregaciones de ejemplo
+    ├── 01_crear_bd.js                 # Colecciones, validación, datos e índices
+    └── 02_consultas.js                # Consultas, agregaciones y CRUD
 ```
 
 ## 🐬 MySQL
@@ -26,109 +27,148 @@ bd-videojuegos/
 
 ```mermaid
 erDiagram
-    DESARROLLADORAS ||--o{ VIDEOJUEGOS : desarrolla
-    DISTRIBUIDORAS  ||--o{ VIDEOJUEGOS : distribuye
-    VIDEOJUEGOS     ||--o{ VIDEOJUEGO_GENERO : tiene
-    GENEROS         ||--o{ VIDEOJUEGO_GENERO : clasifica
-    VIDEOJUEGOS     ||--o{ VIDEOJUEGO_PLATAFORMA : "sale en"
-    PLATAFORMAS     ||--o{ VIDEOJUEGO_PLATAFORMA : ofrece
-    USUARIOS        ||--o{ BIBLIOTECA : posee
-    VIDEOJUEGO_PLATAFORMA ||--o{ BIBLIOTECA : "copia de"
-    USUARIOS        ||--o{ RESENAS : escribe
-    VIDEOJUEGOS     ||--o{ RESENAS : recibe
+    SUCURSALES  ||--o{ EMPLEADOS : emplea
+    SUCURSALES  ||--o{ INVENTARIO : almacena
+    PRODUCTOS   ||--o{ INVENTARIO : "se guarda en"
+    CATEGORIAS  ||--o{ PRODUCTOS : agrupa
+    PLATAFORMAS |o--o{ PRODUCTOS : "es para"
+    PROVEEDORES |o--o{ PRODUCTOS : surte
+    SUCURSALES  ||--o{ VENTAS : registra
+    EMPLEADOS   ||--o{ VENTAS : atiende
+    CLIENTES    |o--o{ VENTAS : compra
+    VENTAS      ||--|{ DETALLE_VENTA : contiene
+    PRODUCTOS   ||--o{ DETALLE_VENTA : "se vende en"
+    SUCURSALES  ||--o{ INTERCAMBIOS : recibe
+    EMPLEADOS   ||--o{ INTERCAMBIOS : atiende
+    CLIENTES    ||--o{ INTERCAMBIOS : entrega
+    INTERCAMBIOS ||--|{ DETALLE_INTERCAMBIO : contiene
+    PRODUCTOS   ||--o{ DETALLE_INTERCAMBIO : "entra como"
+    CLIENTES    ||--o{ PREVENTAS : aparta
+    PRODUCTOS   ||--o{ PREVENTAS : "se aparta"
+    SUCURSALES  ||--o{ PREVENTAS : "se entrega en"
 
-    VIDEOJUEGOS {
-        int id_videojuego PK
-        varchar titulo
-        enum clasificacion
-        enum modo_juego
-        int id_desarrolladora FK
-        int id_distribuidora FK
+    PRODUCTOS {
+        int id_producto PK
+        varchar sku UK
+        varchar nombre
+        int id_categoria FK
+        int id_plataforma FK
+        int id_proveedor FK
+        enum condicion
+        decimal precio_venta
+        decimal costo
     }
-    VIDEOJUEGO_PLATAFORMA {
-        int id_videojuego PK,FK
-        int id_plataforma PK,FK
-        date fecha_lanzamiento
-        decimal precio_usd
+    INVENTARIO {
+        int id_sucursal PK,FK
+        int id_producto PK,FK
+        int existencia
+        int stock_minimo
     }
-    BIBLIOTECA {
-        int id_usuario PK,FK
-        int id_videojuego PK,FK
-        int id_plataforma PK,FK
-        date fecha_compra
-        decimal horas_jugadas
-        bool completado
+    VENTAS {
+        int id_venta PK
+        datetime fecha
+        int id_sucursal FK
+        int id_empleado FK
+        int id_cliente FK
+        decimal subtotal
+        decimal descuento
+        decimal iva
+        decimal total
     }
-    RESENAS {
-        int id_resena PK
-        int id_usuario FK
-        int id_videojuego FK
-        tinyint calificacion
+    DETALLE_VENTA {
+        int id_venta PK,FK
+        int id_producto PK,FK
+        int cantidad
+        decimal precio_unitario
+    }
+    CLIENTES {
+        int id_cliente PK
+        varchar correo UK
+        enum membresia
+        int puntos
     }
 ```
 
-**Tablas:** `desarrolladoras`, `distribuidoras`, `plataformas`, `generos`, `videojuegos`, `videojuego_genero` (N:M), `videojuego_plataforma` (N:M), `usuarios`, `biblioteca`, `resenas`.
+### Tablas (14)
 
-**Extras:**
-- Vistas `v_catalogo` (catálogo completo) y `v_ranking` (calificación promedio)
-- Procedimiento `sp_biblioteca_usuario('carlos_gamer')`
-- Trigger `trg_resena_requiere_juego`: no deja reseñar un juego que el usuario no tiene
+| Grupo | Tablas |
+|---|---|
+| Tiendas | `sucursales`, `empleados` |
+| Clientes | `clientes` |
+| Catálogo | `categorias`, `plataformas`, `proveedores`, `productos`, `inventario` |
+| Operación | `ventas`, `detalle_venta`, `intercambios`, `detalle_intercambio`, `preventas` |
+
+### Lógica automática
+
+| Objeto | Qué hace |
+|---|---|
+| `trg_dv_validar_stock` | No deja vender más de lo que hay en la sucursal |
+| `trg_dv_despues_insertar` | Al vender: descuenta inventario, calcula subtotal, descuento Pro (10%), IVA (16% incluido) y total, y suma puntos al cliente (1 por cada $10) |
+| `trg_di_despues_insertar` | Al recibir un intercambio: suma el usado al inventario y calcula lo pagado |
+| `fn_valor_intercambio(producto, forma)` | Lo que paga la tienda por un usado: 30% en efectivo o 40% en crédito |
+| `sp_reporte_ventas(inicio, fin)` | Ventas, total y ticket promedio por sucursal |
+| `sp_bajo_stock(sucursal)` | Productos en o debajo del stock mínimo |
+| `sp_historial_cliente(correo)` | Todas las compras de un cliente |
+| Vistas | `v_catalogo`, `v_tickets`, `v_mas_vendidos` |
 
 ### Cómo ejecutarlo en MySQL Workbench
 
 1. Abre MySQL Workbench y conéctate a tu servidor local.
 2. `File > Open SQL Script…` y abre `mysql/01_esquema.sql`.
-3. Ejecuta todo con el rayo ⚡ (o `Ctrl+Shift+Enter`).
-4. Repite con `02_datos.sql` y después con `03_vistas_procedimientos_consultas.sql`.
-5. Refresca el panel **Schemas** y verás la base `videojuegos`.
-6. Para ver el diagrama: `Database > Reverse Engineer…`, elige la base `videojuegos` y Workbench dibuja el modelo EER.
+3. Ejecuta todo con el rayo ⚡ (`Ctrl+Shift+Enter`).
+4. Repite **en orden** con `02`, `03` y `04`.
+5. Refresca **Schemas** y aparece la base `gamestop`.
+6. Para el diagrama: `Database > Reverse Engineer…`, elige `gamestop` y Workbench dibuja el modelo EER.
 
 > Requiere MySQL 8.0.13 o más reciente.
 
 ## 🍃 MongoDB
 
-En MongoDB los datos se agrupan en documentos en lugar de repartirse en muchas tablas:
+| Colección | Contenido |
+|---|---|
+| `sucursales` | Cada sucursal con sus **empleados embebidos** |
+| `productos` | Cada producto con su **inventario por sucursal embebido**. Validado con `$jsonSchema` |
+| `clientes` | Datos, membresía y puntos |
+| `ventas` | Cada ticket con sus **artículos embebidos** (se copia nombre y precio al momento de vender) |
+| `intercambios` | Cada intercambio con los usados recibidos |
+| `preventas` | Referencias a cliente, producto y sucursal |
 
-| Colección     | Contenido |
-|---------------|-----------|
-| `videojuegos` | Cada juego lleva **dentro** su desarrolladora, distribuidora, géneros y plataformas (con fecha y precio). Tiene validación con `$jsonSchema`. |
-| `usuarios`    | Cada usuario lleva **dentro** su biblioteca de juegos. |
-| `resenas`     | Colección aparte que **referencia** al usuario y al juego (se unen con `$lookup`). |
-
-Ejemplo de documento:
+Ejemplo de documento de venta:
 
 ```json
 {
-  "_id": "elden-ring",
-  "titulo": "Elden Ring",
-  "clasificacion": "M",
-  "desarrolladora": { "nombre": "FromSoftware", "pais": "Japón" },
-  "distribuidora": "Bandai Namco",
-  "generos": ["Acción", "RPG", "Mundo abierto", "Soulslike"],
-  "plataformas": [
-    { "nombre": "PlayStation 5", "fecha_lanzamiento": "2022-02-25", "precio_usd": 59.99 },
-    { "nombre": "PC",            "fecha_lanzamiento": "2022-02-25", "precio_usd": 59.99 }
-  ]
+  "_id": 3,
+  "fecha": "2026-11-05T13:05:00",
+  "sucursal": 2,
+  "empleado": 5,
+  "cliente": 2,
+  "metodo_pago": "Tarjeta",
+  "articulos": [
+    { "sku": "CON-NS2-STD", "nombre": "Consola Nintendo Switch 2", "cantidad": 1, "precio_unitario": 9499 },
+    { "sku": "VJ-NS2-MKW",  "nombre": "Mario Kart World",          "cantidad": 1, "precio_unitario": 1699 }
+  ],
+  "subtotal": 11198, "descuento": 1119.8, "iva": 1390.09, "total": 10078.2
 }
 ```
 
-### Cómo ejecutarlo
+Lo que en MySQL hacen los triggers (descontar inventario, totales, puntos), en MongoDB lo hacen las funciones `registrarVenta()` y `registrarIntercambio()` del script. Los resultados son los mismos en las dos bases.
 
-Desde la terminal, en la carpeta del proyecto:
+### Cómo ejecutarlo
 
 ```bash
 mongosh mongodb/01_crear_bd.js
 mongosh mongodb/02_consultas.js
 ```
 
-O en **MongoDB Compass**: abre la pestaña **Mongosh** (abajo), copia el contenido de `01_crear_bd.js`, pégalo y presiona Enter.
+O en **MongoDB Compass**: abre la pestaña **Mongosh** (abajo), pega el contenido de `01_crear_bd.js` y presiona Enter.
 
-## 🔁 MySQL vs MongoDB en este proyecto
+## 🔁 MySQL vs MongoDB
 
-| Concepto                | MySQL                                   | MongoDB                               |
-|-------------------------|-----------------------------------------|---------------------------------------|
-| Géneros de un juego     | Tabla intermedia `videojuego_genero`    | Arreglo `generos` dentro del juego    |
-| Plataformas y precios   | Tabla `videojuego_plataforma`           | Arreglo de objetos `plataformas`      |
-| Biblioteca del usuario  | Tabla `biblioteca`                      | Arreglo `biblioteca` dentro del usuario |
-| Unir reseñas con juegos | `JOIN`                                  | `$lookup`                             |
-| Reglas de datos         | `CHECK`, `FOREIGN KEY`, trigger         | `$jsonSchema`, índices únicos         |
+| Concepto | MySQL | MongoDB |
+|---|---|---|
+| Empleados de una sucursal | Tabla `empleados` con llave foránea | Arreglo `empleados` dentro de la sucursal |
+| Inventario | Tabla `inventario` (sucursal + producto) | Arreglo `inventario` dentro del producto |
+| Artículos de una venta | Tabla `detalle_venta` | Arreglo `articulos` dentro de la venta |
+| Unir datos | `JOIN` | `$lookup` |
+| Reglas automáticas | Triggers y procedimientos | Funciones JS en el script |
+| Validación | `CHECK`, `FOREIGN KEY`, `ENUM` | `$jsonSchema`, índices únicos |

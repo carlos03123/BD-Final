@@ -1,25 +1,56 @@
-# 🎮 BD-Final: Base de datos de una tienda GameStop
+# 🎮 BD-Final: base de datos de GameStop (Estados Unidos)
 
-La base de datos de una cadena de tiendas de videojuegos tipo **GameStop** con 4 sucursales en Baja California, hecha de dos formas:
+Base de datos para una cadena de tiendas **GameStop** en Estados Unidos: 10 tiendas en 7 estados, con ventas, inventario, programa de lealtad (PowerUp Rewards / GameStop Pro), intercambio de juegos usados, devoluciones, preventas y compras a proveedores.
 
-- **MySQL (relacional)**: para abrir y ejecutar en **MySQL Workbench**
-- **MongoDB (documental)**: para ejecutar en **mongosh** o **MongoDB Compass**
+Está hecha de dos formas:
 
-Guarda las sucursales y sus empleados, los clientes con membresía (Básica o **Pro** con 10% de descuento y puntos), el catálogo (videojuegos nuevos y usados, consolas, accesorios, coleccionables y tarjetas de regalo), el inventario de cada sucursal, las **ventas**, los **intercambios** (cuando el cliente vende sus juegos usados a la tienda) y las **preventas**.
+| | Motor | Herramienta |
+|---|---|---|
+| 🐬 **Relacional** | MySQL 8.0 | MySQL Workbench |
+| 🍃 **Documental** | MongoDB 6+ | mongosh / MongoDB Compass |
+
+Las dos versiones tienen **exactamente los mismos datos**, del 1 de octubre al 23 de noviembre de 2026, que incluye el lanzamiento de GTA VI y las ofertas anticipadas de Black Friday.
+
+---
 
 ## 📁 Estructura
 
 ```
 BD-Final/
 ├── mysql/
-│   ├── 01_esquema.sql                 # Crea la BD "gamestop" y sus 14 tablas
-│   ├── 02_triggers_procedimientos.sql # 3 triggers, 1 función, 3 procedimientos
-│   ├── 03_datos.sql                   # Datos de ejemplo
-│   └── 04_vistas_consultas.sql        # 3 vistas y 13 consultas
-└── mongodb/
-    ├── 01_crear_bd.js                 # Colecciones, validación, datos e índices
-    └── 02_consultas.js                # Consultas, agregaciones y CRUD
+│   ├── 01_esquema.sql               22 tablas con PK, FK, CHECK, UNIQUE, ENUM e índices
+│   ├── 02_funciones_triggers.sql    4 funciones y 9 triggers (reglas de negocio)
+│   ├── 03_procedimientos.sql        9 procedimientos (transacciones, cursor, JSON_TABLE)
+│   ├── 04_datos.sql                 Datos de ejemplo cargados en orden cronológico
+│   ├── 05_vistas.sql                7 vistas
+│   ├── 06_consultas.sql             30 consultas de básicas a avanzadas
+│   ├── 07_seguridad.sql             4 roles y 5 usuarios con privilegios
+│   └── 08_pruebas.sql               Pruebas de reglas de negocio y transacciones
+├── mongodb/
+│   ├── 01_colecciones.js            Colecciones con $jsonSchema, índices y vistas
+│   ├── 02_datos.js                  Los mismos datos que MySQL
+│   ├── 03_operaciones.js            Reglas de negocio en JavaScript + pruebas
+│   └── 04_consultas.js              Consultas y agregaciones
+└── docs/
+    ├── diccionario_datos.md         Todas las columnas de todas las tablas
+    └── normalizacion.md             1FN, 2FN, 3FN y diseño documental
 ```
+
+## 📊 Contenido
+
+| Datos | Cantidad |
+|---|---|
+| Tiendas | 10 (TX, CA, NY, FL, IL, AZ, WA) |
+| Empleados | 45 (con organigrama: gerentes de distrito → gerentes → subgerentes → asesores) |
+| Clientes | 60 (≈ 40 % con GameStop Pro) |
+| Productos | 67 (videojuegos nuevos y usados, consolas, accesorios, coleccionables, tarjetas) |
+| Ventas | 473 tickets con 772 renglones de detalle |
+| Intercambios | 30 · **Devoluciones:** 14 · **Preventas:** 23 · **Órdenes de compra:** 19 |
+| Cambios de precio en la bitácora | 10 |
+
+> Los nombres de personas, direcciones, teléfonos y correos son **ficticios**, creados con fines académicos. Los precios están en dólares (USD).
+
+---
 
 ## 🐬 MySQL
 
@@ -27,148 +58,229 @@ BD-Final/
 
 ```mermaid
 erDiagram
-    SUCURSALES  ||--o{ EMPLEADOS : emplea
-    SUCURSALES  ||--o{ INVENTARIO : almacena
-    PRODUCTOS   ||--o{ INVENTARIO : "se guarda en"
-    CATEGORIAS  ||--o{ PRODUCTOS : agrupa
+    ESTADOS ||--o{ SUCURSALES : "ubica"
+    ESTADOS ||--o{ CLIENTES : "reside"
+    ESTADOS |o--o{ PROVEEDORES : "ubica"
+    SUCURSALES ||--o{ EMPLEADOS : "emplea"
+    EMPLEADOS |o--o{ EMPLEADOS : "supervisa"
+    NIVELES_MEMBRESIA ||--o{ CLIENTES : "clasifica"
+    CATEGORIAS ||--o{ PRODUCTOS : "agrupa"
     PLATAFORMAS |o--o{ PRODUCTOS : "es para"
-    PROVEEDORES |o--o{ PRODUCTOS : surte
-    SUCURSALES  ||--o{ VENTAS : registra
-    EMPLEADOS   ||--o{ VENTAS : atiende
-    CLIENTES    |o--o{ VENTAS : compra
-    VENTAS      ||--|{ DETALLE_VENTA : contiene
-    PRODUCTOS   ||--o{ DETALLE_VENTA : "se vende en"
-    SUCURSALES  ||--o{ INTERCAMBIOS : recibe
-    EMPLEADOS   ||--o{ INTERCAMBIOS : atiende
-    CLIENTES    ||--o{ INTERCAMBIOS : entrega
-    INTERCAMBIOS ||--|{ DETALLE_INTERCAMBIO : contiene
-    PRODUCTOS   ||--o{ DETALLE_INTERCAMBIO : "entra como"
-    CLIENTES    ||--o{ PREVENTAS : aparta
-    PRODUCTOS   ||--o{ PREVENTAS : "se aparta"
-    SUCURSALES  ||--o{ PREVENTAS : "se entrega en"
+    PROVEEDORES |o--o{ PRODUCTOS : "surte"
+    PRODUCTOS ||--o{ PRODUCTO_GENERO : ""
+    GENEROS ||--o{ PRODUCTO_GENERO : ""
+    SUCURSALES ||--o{ INVENTARIO : ""
+    PRODUCTOS ||--o{ INVENTARIO : ""
+    SUCURSALES ||--o{ VENTAS : "registra"
+    EMPLEADOS ||--o{ VENTAS : "atiende"
+    CLIENTES |o--o{ VENTAS : "compra"
+    VENTAS ||--|{ DETALLE_VENTA : "contiene"
+    PRODUCTOS ||--o{ DETALLE_VENTA : ""
+    VENTAS ||--o{ DEVOLUCIONES : "tiene"
+    EMPLEADOS ||--o{ DEVOLUCIONES : "procesa"
+    DEVOLUCIONES ||--|{ DETALLE_DEVOLUCION : "contiene"
+    PRODUCTOS ||--o{ DETALLE_DEVOLUCION : ""
+    SUCURSALES ||--o{ INTERCAMBIOS : "recibe"
+    EMPLEADOS ||--o{ INTERCAMBIOS : "atiende"
+    CLIENTES ||--o{ INTERCAMBIOS : "entrega"
+    INTERCAMBIOS ||--|{ DETALLE_INTERCAMBIO : "contiene"
+    PRODUCTOS ||--o{ DETALLE_INTERCAMBIO : ""
+    CLIENTES ||--o{ PREVENTAS : "aparta"
+    PRODUCTOS ||--o{ PREVENTAS : ""
+    SUCURSALES ||--o{ PREVENTAS : "entrega"
+    PROVEEDORES ||--o{ ORDENES_COMPRA : "recibe"
+    SUCURSALES ||--o{ ORDENES_COMPRA : "pide"
+    EMPLEADOS ||--o{ ORDENES_COMPRA : "solicita"
+    ORDENES_COMPRA ||--|{ DETALLE_ORDEN_COMPRA : "contiene"
+    PRODUCTOS ||--o{ DETALLE_ORDEN_COMPRA : ""
+    PRODUCTOS ||--o{ BITACORA_PRECIOS : "audita"
 
-    PRODUCTOS {
-        int id_producto PK
-        varchar sku UK
-        varchar nombre
-        int id_categoria FK
-        int id_plataforma FK
-        int id_proveedor FK
-        enum condicion
-        decimal precio_venta
-        decimal costo
-    }
-    INVENTARIO {
-        int id_sucursal PK,FK
-        int id_producto PK,FK
-        int existencia
-        int stock_minimo
-    }
-    VENTAS {
-        int id_venta PK
-        datetime fecha
-        int id_sucursal FK
-        int id_empleado FK
-        int id_cliente FK
-        decimal subtotal
-        decimal descuento
-        decimal iva
-        decimal total
-    }
-    DETALLE_VENTA {
-        int id_venta PK,FK
-        int id_producto PK,FK
-        int cantidad
-        decimal precio_unitario
-    }
-    CLIENTES {
-        int id_cliente PK
-        varchar correo UK
-        enum membresia
-        int puntos
-    }
+    ESTADOS { int id_estado PK
+              char abreviatura UK
+              decimal tasa_impuesto }
+    SUCURSALES { int id_sucursal PK
+                 smallint numero_tienda UK
+                 varchar nombre
+                 int id_estado FK }
+    EMPLEADOS { int id_empleado PK
+                enum puesto
+                decimal salario_hora
+                int id_sucursal FK
+                int id_supervisor FK }
+    NIVELES_MEMBRESIA { int id_nivel PK
+                        decimal descuento_usados_pct
+                        tinyint puntos_por_dolar }
+    CLIENTES { int id_cliente PK
+               varchar correo UK
+               int id_nivel FK
+               int puntos
+               decimal credito_tienda }
+    PRODUCTOS { int id_producto PK
+                varchar sku UK
+                varchar nombre
+                enum condicion
+                decimal precio_venta
+                decimal costo
+                bool activo }
+    INVENTARIO { int id_sucursal PK,FK
+                 int id_producto PK,FK
+                 int existencia
+                 int stock_minimo }
+    VENTAS { int id_venta PK
+             datetime fecha
+             enum metodo_pago
+             decimal subtotal
+             decimal impuesto
+             decimal total
+             enum estado }
+    DETALLE_VENTA { int id_venta PK,FK
+                    int id_producto PK,FK
+                    int cantidad
+                    decimal precio_unitario
+                    decimal descuento }
+    INTERCAMBIOS { int id_intercambio PK
+                   enum forma_pago
+                   decimal total_pagado }
+    ORDENES_COMPRA { int id_orden PK
+                     enum estado
+                     decimal total }
+    BITACORA_PRECIOS { int id_bitacora PK
+                       decimal precio_anterior
+                       decimal precio_nuevo
+                       varchar usuario }
 ```
 
-### Tablas (14)
+Las columnas de todas las tablas están en el [diccionario de datos](docs/diccionario_datos.md), y la justificación del modelo en [normalización](docs/normalizacion.md).
 
-| Grupo | Tablas |
+### Reglas de negocio automáticas
+
+| Regla | Dónde |
 |---|---|
-| Tiendas | `sucursales`, `empleados` |
-| Clientes | `clientes` |
-| Catálogo | `categorias`, `plataformas`, `proveedores`, `productos`, `inventario` |
-| Operación | `ventas`, `detalle_venta`, `intercambios`, `detalle_intercambio`, `preventas` |
+| No se puede vender más de lo que hay en la tienda | `trg_detalle_venta_bi` |
+| No se venden productos descontinuados | `trg_detalle_venta_bi` |
+| El cliente GameStop Pro vigente tiene **10 % de descuento en usados** | `trg_detalle_venta_bi` + `fn_es_pro` |
+| El pago con crédito en tienda requiere saldo suficiente | `trg_detalle_venta_bi` |
+| Al vender se descuenta el inventario y se calculan subtotal, descuento, **impuesto según el estado** y total | `trg_detalle_venta_ai` + `fn_tasa_impuesto` |
+| Puntos de lealtad: 1 por dólar (2 si es Pro) | `trg_detalle_venta_ai` |
+| Devoluciones solo dentro de 30 días y sin pasar de lo comprado | `trg_detalle_devolucion_bi` |
+| La devolución regresa el inventario, reembolsa con impuesto y quita los puntos | `trg_detalle_devolucion_ai` |
+| En intercambio solo entran productos usados o reacondicionados | `trg_detalle_intercambio_bi` |
+| La tienda paga 25 % en efectivo o 35 % en crédito (+10 % de bono para Pro) | `fn_valor_intercambio` |
+| El precio nunca puede ser menor al costo | `trg_productos_bu` + `CHECK` |
+| Cada cambio de precio queda en la bitácora con usuario y fecha | `trg_productos_au` |
 
-### Lógica automática
+### Procedimientos almacenados
 
-| Objeto | Qué hace |
+| Procedimiento | Qué demuestra |
 |---|---|
-| `trg_dv_validar_stock` | No deja vender más de lo que hay en la sucursal |
-| `trg_dv_despues_insertar` | Al vender: descuenta inventario, calcula subtotal, descuento Pro (10%), IVA (16% incluido) y total, y suma puntos al cliente (1 por cada $10) |
-| `trg_di_despues_insertar` | Al recibir un intercambio: suma el usado al inventario y calcula lo pagado |
-| `fn_valor_intercambio(producto, forma)` | Lo que paga la tienda por un usado: 30% en efectivo o 40% en crédito |
-| `sp_reporte_ventas(inicio, fin)` | Ventas, total y ticket promedio por sucursal |
-| `sp_bajo_stock(sucursal)` | Productos en o debajo del stock mínimo |
-| `sp_historial_cliente(correo)` | Todas las compras de un cliente |
-| Vistas | `v_catalogo`, `v_tickets`, `v_mas_vendidos` |
+| `sp_registrar_venta` | Venta completa en una **transacción**. Recibe los artículos como **JSON** (`JSON_TABLE`) y hace `ROLLBACK` si algo falla |
+| `sp_recibir_orden` | Transacción con `SELECT … FOR UPDATE` que suma la mercancía al inventario |
+| `sp_generar_reabasto` | Usa un **cursor** para crear una orden por proveedor con lo que está bajo el mínimo |
+| `sp_transferir_inventario` | Mueve mercancía entre tiendas dentro de una transacción |
+| `sp_renovar_pro` | Contrata o renueva GameStop Pro por un año |
+| `sp_ajustar_precios` | Aplica ofertas por categoría y plataforma (la bitácora se llena sola) |
+| `sp_reporte_ventas`, `sp_bajo_stock`, `sp_historial_cliente` | Reportes |
 
-### Cómo ejecutarlo en MySQL Workbench
+### Consultas (`06_consultas.sql`)
 
-1. Abre MySQL Workbench y conéctate a tu servidor local.
-2. `File > Open SQL Script…` y abre `mysql/01_esquema.sql`.
-3. Ejecuta todo con el rayo ⚡ (`Ctrl+Shift+Enter`).
-4. Repite **en orden** con `02`, `03` y `04`.
-5. Refresca **Schemas** y aparece la base `gamestop`.
-6. Para el diagrama: `Database > Reverse Engineer…`, elige `gamestop` y Workbench dibuja el modelo EER.
+Son 30 consultas en seis grupos:
 
-> Requiere MySQL 8.0.13 o más reciente.
+- **A. Básicas:** `WHERE`, `LIKE`, `BETWEEN`, `IN`, `ORDER BY`.
+- **B. JOINs:** `INNER`, `LEFT`, auto-JOIN y JOINs de 5 tablas.
+- **C. Agregación:** `GROUP BY` y `HAVING`.
+- **D. Subconsultas:** `IN`, `EXISTS`, `NOT EXISTS` y correlacionadas.
+- **E. Avanzadas:** `WITH` (CTE); funciones de ventana `ROW_NUMBER`, `RANK`, `LAG`, `FIRST_VALUE` y promedio móvil; `CASE` y `UNION ALL`.
+- **F. Vistas y procedimientos.**
+
+### Seguridad (`07_seguridad.sql`)
+
+| Rol | Puede |
+|---|---|
+| `rol_admin` | Todo |
+| `rol_gerente` | Consultar, insertar y modificar. **No puede borrar** |
+| `rol_vendedor` | Ver catálogo e inventario y registrar ventas, intercambios, devoluciones y preventas. De los clientes solo puede modificar **teléfono y correo** (privilegio por columna) |
+| `rol_analista` | Solo **vistas** y reportes. No ve las tablas con datos personales |
+
+Uno de los usuarios tiene caducidad de contraseña y bloqueo tras 5 intentos fallidos.
+
+### ▶️ Cómo ejecutarlo en MySQL Workbench
+
+1. Abre MySQL Workbench y conéctate con tu usuario `root`.
+2. `File → Open SQL Script…` y abre `mysql/01_esquema.sql`.
+3. Ejecuta el script completo con el rayo ⚡ (`Ctrl + Shift + Enter`).
+4. Repite **en orden** con `02`, `03`, `04`, `05`, `06` y `07`.
+5. Opcional: ejecuta `08_pruebas.sql` para ver cómo se rechazan las operaciones inválidas. Este script modifica datos; para volver al inicio, corre otra vez del `01` al `05`.
+6. Refresca el panel **Schemas** y aparece la base `gamestop_usa`.
+7. **Diagrama EER:** `Database → Reverse Engineer…`, elige `gamestop_usa` y Workbench dibuja el modelo con todas las relaciones.
+
+> Requiere **MySQL 8.0.13 o superior** (usa `CHECK`, `JSON_TABLE`, funciones de ventana, CTE y roles).
+
+---
 
 ## 🍃 MongoDB
 
-| Colección | Contenido |
-|---|---|
-| `sucursales` | Cada sucursal con sus **empleados embebidos** |
-| `productos` | Cada producto con su **inventario por sucursal embebido**. Validado con `$jsonSchema` |
-| `clientes` | Datos, membresía y puntos |
-| `ventas` | Cada ticket con sus **artículos embebidos** (se copia nombre y precio al momento de vender) |
-| `intercambios` | Cada intercambio con los usados recibidos |
-| `preventas` | Referencias a cliente, producto y sucursal |
+| Colección | Qué guarda | Embebido |
+|---|---|---|
+| `sucursales` | Tiendas | Estado (con impuesto) y **empleados** |
+| `productos` | Catálogo (`_id` = SKU) | **Inventario por tienda** y géneros |
+| `clientes` | Clientes | Membresía |
+| `ventas` | Tickets | **Artículos y devoluciones** |
+| `intercambios`, `ordenes_compra` | Operaciones | Artículos |
+| `preventas`, `proveedores`, `niveles_membresia`, `bitacora_precios` | — | — |
 
-Ejemplo de documento de venta:
+Ejemplo de una venta:
 
-```json
+```js
 {
-  "_id": 3,
-  "fecha": "2026-11-05T13:05:00",
-  "sucursal": 2,
-  "empleado": 5,
-  "cliente": 2,
-  "metodo_pago": "Tarjeta",
-  "articulos": [
-    { "sku": "CON-NS2-STD", "nombre": "Consola Nintendo Switch 2", "cantidad": 1, "precio_unitario": 9499 },
-    { "sku": "VJ-NS2-MKW",  "nombre": "Mario Kart World",          "cantidad": 1, "precio_unitario": 1699 }
+  _id: 250,
+  fecha: ISODate("2026-11-04T12:40:00Z"),
+  sucursal: { _id: 5, nombre: "GameStop Mission Valley", estado: "CA" },
+  empleado: { _id: 24, nombre: "Alexis Nguyen" },
+  cliente: 40,                                   // referencia a clientes
+  metodo_pago: "Efectivo",
+  articulos: [
+    { sku: "ACC-PS5-DSE", nombre: "Control DualSense Edge", categoria: "Accesorio",
+      condicion: "Nuevo", cantidad: 1, precio_unitario: 199.99, descuento: 0 }
   ],
-  "subtotal": 11198, "descuento": 1119.8, "iva": 1390.09, "total": 10078.2
+  subtotal: 199.99, descuento: 0, impuesto: 14.5, total: 214.49,
+  estado: "Completada"
 }
 ```
 
-Lo que en MySQL hacen los triggers (descontar inventario, totales, puntos), en MongoDB lo hacen las funciones `registrarVenta()` y `registrarIntercambio()` del script. Los resultados son los mismos en las dos bases.
+La versión MongoDB incluye:
 
-### Cómo ejecutarlo
+- **Validación** con `$jsonSchema` en todas las colecciones principales, más una regla `$expr` (precio ≥ costo).
+- **Índices:** únicos, compuestos, multikey y de texto.
+- **4 vistas:** `v_ventas_tienda`, `v_catalogo`, `v_inventario_valorizado` y `v_ventas_diarias`.
+- **Reglas de negocio** en `03_operaciones.js`: `registrarVenta()`, `registrarDevolucion()`, `registrarIntercambio()`, `recibirOrden()` y `cambiarPrecio()`. Corren en **transacción** si el servidor es un replica set, como MongoDB Atlas.
+- **Consultas** con `$lookup`, `$unwind`, `$group`, `$bucket`, `$facet`, `$setWindowFields` (ranking, acumulado, promedio móvil) y búsqueda de texto.
+
+### ▶️ Cómo ejecutarlo
+
+Desde una terminal, en la carpeta del proyecto:
 
 ```bash
-mongosh mongodb/01_crear_bd.js
-mongosh mongodb/02_consultas.js
+mongosh mongodb/01_colecciones.js
+mongosh mongodb/02_datos.js
+mongosh mongodb/04_consultas.js
+mongosh mongodb/03_operaciones.js   # opcional: modifica datos
 ```
 
-O en **MongoDB Compass**: abre la pestaña **Mongosh** (abajo), pega el contenido de `01_crear_bd.js` y presiona Enter.
+En **MongoDB Compass**: abre la pestaña **Mongosh** (abajo), pega el contenido de cada archivo en ese orden y presiona Enter.
 
-## 🔁 MySQL vs MongoDB
+---
+
+## 🔁 MySQL vs MongoDB en este proyecto
 
 | Concepto | MySQL | MongoDB |
 |---|---|---|
-| Empleados de una sucursal | Tabla `empleados` con llave foránea | Arreglo `empleados` dentro de la sucursal |
-| Inventario | Tabla `inventario` (sucursal + producto) | Arreglo `inventario` dentro del producto |
-| Artículos de una venta | Tabla `detalle_venta` | Arreglo `articulos` dentro de la venta |
-| Unir datos | `JOIN` | `$lookup` |
-| Reglas automáticas | Triggers y procedimientos | Funciones JS en el script |
-| Validación | `CHECK`, `FOREIGN KEY`, `ENUM` | `$jsonSchema`, índices únicos |
+| Artículos de una venta | Tabla `detalle_venta` + JOIN | Arreglo `articulos` dentro de la venta |
+| Inventario | Tabla `inventario` (tienda × producto) | Arreglo `inventario` dentro del producto |
+| Géneros de un juego | Tabla N:M `producto_genero` | Arreglo `generos` |
+| Empleados y jefes | FK recursiva `id_supervisor` | Arreglo en la tienda + `$lookup` con pipeline |
+| Unir colecciones | `JOIN` | `$lookup` |
+| Reglas de negocio | Triggers y procedimientos | Funciones en JavaScript |
+| Transacciones | `START TRANSACTION … COMMIT / ROLLBACK` | `session.withTransaction()` (replica set) |
+| Validación | `CHECK`, `FOREIGN KEY`, `ENUM`, `UNIQUE` | `$jsonSchema`, `$expr`, índices únicos |
+| Ranking / acumulados | `ROW_NUMBER()`, `RANK()`, `SUM() OVER` | `$setWindowFields` |
+| Permisos | Roles y privilegios por tabla y columna | Roles de MongoDB (no incluidos) |

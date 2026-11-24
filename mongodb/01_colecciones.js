@@ -92,7 +92,7 @@ db.createCollection("productos", { validator: { $jsonSchema: {
     categoria: { enum: ["Videojuego", "Consola", "Accesorio", "Coleccionable", "Tarjeta de regalo"] },
     condicion: { enum: ["Nuevo", "Usado", "Reacondicionado"] },
     clasificacion_esrb: { enum: ["E", "E10+", "T", "M", "RP"] },
-    precio_venta: { bsonType: ["double", "int", "decimal"], exclusiveMinimum: 0 },
+    precio_venta: { bsonType: ["double", "int", "decimal"], minimum: 0, exclusiveMinimum: true },
     costo: dinero,
     generos: { bsonType: "array", items: { bsonType: "string" } },
     inventario: { bsonType: "array", items: {

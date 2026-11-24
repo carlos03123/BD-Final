@@ -262,7 +262,7 @@ def escribir_js(docs, ruta):
          "",
          'db = db.getSiblingDB("gamestop_usa");',
          "// Las fechas se guardan en UTC",
-         'const D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");',
+         'var D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");',
          ""]
     for col in ORDEN_COLECCIONES:
         L += [f"// {COMENTARIOS[col]}", f"db.{col}.deleteMany({{}});", f"db.{col}.insertMany(["]

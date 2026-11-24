@@ -22,8 +22,8 @@
 db = db.getSiblingDB("gamestop_usa");
 db.dropDatabase();
 
-const dinero = { bsonType: ["double", "int", "long", "decimal"], minimum: 0 };
-const fecha  = { bsonType: "date" };
+var dinero = { bsonType: ["double", "int", "long", "decimal"], minimum: 0 };
+var fecha  = { bsonType: "date" };
 
 // ---------------------------------------------------------------------
 // niveles_membresia

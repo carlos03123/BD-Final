@@ -12,7 +12,7 @@
 // =====================================================================
 
 db = db.getSiblingDB("gamestop_usa");
-const D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");
+var D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");
 function show(titulo, cursor) {
   print("\n=== " + titulo + " ===");
   const docs = cursor.toArray();
@@ -148,7 +148,7 @@ show("C6. GameStop Pro vs PowerUp Rewards",
 // D. EQUIVALENTES A SUBCONSULTAS
 // =====================================================================
 
-const vendidos = db.ventas.distinct("articulos.sku");
+var vendidos = db.ventas.distinct("articulos.sku");
 show("D1. Productos que nunca se han vendido (NOT IN)",
   db.productos.find({ _id: { $nin: vendidos } }, { nombre: 1, condicion: 1 }));
 

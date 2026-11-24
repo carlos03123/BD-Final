@@ -29,9 +29,9 @@ db = db.getSiblingDB("gamestop_usa");
 // Utilidades
 // ---------------------------------------------------------------------
 // redondeo a centavos (los números de JavaScript son de punto flotante)
-const r2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100;
-const err = (msg) => { throw new Error(msg); };
-const siguienteId = (col) => ((db[col].find({}, { _id: 1 }).sort({ _id: -1 }).limit(1).toArray()[0] || { _id: 0 })._id + 1);
+var r2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100;
+var err = (msg) => { throw new Error(msg); };
+var siguienteId = (col) => ((db[col].find({}, { _id: 1 }).sort({ _id: -1 }).limit(1).toArray()[0] || { _id: 0 })._id + 1);
 
 function enTransaccion(fn) {
   let session;
@@ -238,9 +238,9 @@ function probar(nombre, fn) {
 }
 
 print("\n=== Operaciones que deben RECHAZARSE ===");
-const sinCredito = db.clientes.findOne({ credito_tienda: 0 })._id;
-const ventaOct   = db.ventas.find({ fecha: { $lt: new Date("2026-10-05T00:00:00Z") } }).sort({ _id: 1 }).limit(1).toArray()[0];
-const ventaNov   = db.ventas.find({ fecha: { $gte: new Date("2026-11-20T00:00:00Z") }, estado: "Completada" }).sort({ _id: 1 }).limit(1).toArray()[0];
+var sinCredito = db.clientes.findOne({ credito_tienda: 0 })._id;
+var ventaOct   = db.ventas.find({ fecha: { $lt: new Date("2026-10-05T00:00:00Z") } }).sort({ _id: 1 }).limit(1).toArray()[0];
+var ventaNov   = db.ventas.find({ fecha: { $gte: new Date("2026-11-20T00:00:00Z") }, estado: "Completada" }).sort({ _id: 1 }).limit(1).toArray()[0];
 
 probar("Vender 500 PS5", () => registrarVenta({ sucursal: 1, empleado: 3, metodo_pago: "Efectivo",
                                                  articulos: [{ sku: "CON-PS5-SLM", cantidad: 500 }] }));
@@ -269,15 +269,15 @@ probar("Índice único: correo de cliente repetido", () =>
                           estado: "TX", membresia: { nivel: "PowerUp Rewards" }, puntos: 0, credito_tienda: 0 }));
 
 print("\n=== Operaciones válidas ===");
-const clientePro = db.clientes.findOne({ "membresia.nivel": "GameStop Pro",
+var clientePro = db.clientes.findOne({ "membresia.nivel": "GameStop Pro",
                                          "membresia.vencimiento": { $gte: new Date() } })._id;
-const antes = db.clientes.findOne({ _id: clientePro }, { puntos: 1, credito_tienda: 1 });
+var antes = db.clientes.findOne({ _id: clientePro }, { puntos: 1, credito_tienda: 1 });
 
 probar("Intercambio con crédito (cliente Pro, recibe bono)", () => registrarIntercambio({
   sucursal: 1, empleado: 3, cliente: clientePro, forma_pago: "Crédito en tienda",
   articulos: [{ sku: "VJ-PS4-RDR2-U", cantidad: 1 }, { sku: "VJ-NSW-SMO-U", cantidad: 1 }] }));
 
-let nuevaVenta;
+var nuevaVenta;
 probar("Venta: juego usado (con descuento Pro) + sobres Pokémon, pagada con crédito", () =>
   nuevaVenta = registrarVenta({ sucursal: 1, empleado: 3, cliente: clientePro, metodo_pago: "Crédito en tienda",
                                 articulos: [{ sku: "VJ-PS4-GTAV-U", cantidad: 1 }, { sku: "COL-PKM-BOOST", cantidad: 2 }] }));

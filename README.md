@@ -1,4 +1,4 @@
-# 🎮 GameStop USA: base de datos para una cadena de tiendas de videojuegos
+#  GameStop USA: base de datos para una cadena de tiendas de videojuegos
 
 **Proyecto final de Bases de Datos.** Diseñamos la base de datos que usaría un distrito de **10 tiendas GameStop en 7 estados de EE. UU.** para operar durante la temporada más fuerte del año: octubre y noviembre de 2026, con el lanzamiento de *Grand Theft Auto VI* (19 de noviembre) y las ofertas anticipadas de Black Friday.
 
@@ -197,7 +197,7 @@ python app/app.py                             # abre http://127.0.0.1:5000
 
 ---
 
-## 👥 Equipo
+##  Equipo
 
 | Integrante | GitHub |
 |---|---|

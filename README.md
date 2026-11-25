@@ -203,7 +203,8 @@ python app/app.py                             # abre http://127.0.0.1:5000
 |---|---|
 | Carlos | [@carlos03123](https://github.com/carlos03123) |
 | Celeste Grageda | [@celestegrageda](https://github.com/celestegrageda) |
+| Jaime | [@Jaime-duende](https://github.com/Jaime-duende) |
 
-Los dos colaboramos en todas las etapas del proyecto: el análisis, el diseño y la programación de la base de datos en MySQL, la migración y validación en MongoDB, la interfaz web y la documentación.
+Los tres colaboramos en todas las etapas del proyecto: el análisis, el diseño y la programación de la base de datos en MySQL, la migración y validación en MongoDB, la interfaz web y la documentación.
 
 > Los nombres de clientes y empleados, direcciones, teléfonos y correos son **ficticios**. Los precios están en dólares y no incluyen impuesto, como se acostumbra en EE. UU.

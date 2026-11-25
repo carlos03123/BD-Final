@@ -1,6 +1,6 @@
 # Diccionario de datos — `gamestop_usa` (MySQL)
 
-Base de datos de la cadena GameStop en Estados Unidos. **22 tablas**, juego de caracteres `utf8mb4`, motor InnoDB.
+Base de datos de la cadena GameStop en Estados Unidos. **43 tablas**: 22 del negocio y 21 de auditoría (`aud_<tabla>`, una por cada tabla del negocio). Juego de caracteres `utf8mb4`, motor InnoDB.
 
 Abreviaturas: **PK** llave primaria · **FK** llave foránea · **UQ** valor único · **AI** autoincremental
 
@@ -28,6 +28,7 @@ Abreviaturas: **PK** llave primaria · **FK** llave foránea · **UQ** valor ún
 20. [ordenes_compra](#ordenes_compra)
 21. [detalle_orden_compra](#detalle_orden_compra)
 22. [bitacora_precios](#bitacora_precios)
+23. [Tablas de auditoría (aud_*)](#tablas-de-auditoría-aud_)
 
 ## estados
 
@@ -343,10 +344,28 @@ Auditoría: la llena un trigger cada vez que cambia un precio.
 | `fecha` | datetime | No |  | CURRENT_TIMESTAMP | Fecha y hora de la operación |
 | `usuario` | varchar(100) | No |  |  | Usuario de MySQL que hizo el cambio |
 
+## Tablas de auditoría (aud_*)
+
+Las 21 tablas `aud_<tabla>` tienen la misma estructura. Se llenan solas con tres triggers por tabla (`trg_aud_<tabla>_ins`, `_upd`, `_del`) y otros dos triggers impiden modificarlas o borrarlas.
+
+Tablas: `aud_estados`, `aud_sucursales`, `aud_empleados`, `aud_niveles_membresia`, `aud_clientes`, `aud_categorias`, `aud_plataformas`, `aud_generos`, `aud_proveedores`, `aud_productos`, `aud_producto_genero`, `aud_inventario`, `aud_ventas`, `aud_detalle_venta`, `aud_devoluciones`, `aud_detalle_devolucion`, `aud_intercambios`, `aud_detalle_intercambio`, `aud_preventas`, `aud_ordenes_compra`, `aud_detalle_orden_compra`
+
+| Columna | Tipo | Nulo | Llave | Default | Descripción |
+|---|---|:-:|---|---|---|
+| `id_auditoria` | bigint | No | PK · AI |  | Identificador del movimiento |
+| `operacion` | enum('INSERT','UPDATE','DELETE') | No |  |  | Tipo de movimiento |
+| `llave` | varchar(60) | No |  |  | Llave primaria del registro afectado (las compuestas se unen con '-') |
+| `datos_anteriores` | json | Sí |  |  | Todos los campos antes del cambio (UPDATE y DELETE) |
+| `datos_nuevos` | json | Sí |  |  | Todos los campos después del cambio (INSERT y UPDATE) |
+| `usuario` | varchar(100) | No |  |  | Usuario de MySQL que hizo el movimiento (`CURRENT_USER()`) |
+| `fecha` | datetime | No |  | CURRENT_TIMESTAMP | Cuándo ocurrió |
+
 ## Vistas
 
 | Vista | Descripción |
 |---|---|
+| `v_auditoria` | Todos los movimientos de las 21 tablas de auditoría en un solo lugar |
+| `v_auditoria_resumen` | Altas, cambios y bajas por tabla |
 | `v_catalogo` | Catálogo con categoría, plataforma, géneros, margen y existencia total |
 | `v_clientes_resumen` | Compras, gasto, puntos, crédito y vigencia Pro de cada cliente |
 | `v_inventario_valorizado` | Piezas y valor (a costo y a precio de venta) del inventario de cada tienda |
@@ -365,10 +384,38 @@ Auditoría: la llena un trigger cada vez que cambia un precio.
 | `fn_valor_intercambio` | Función | p_id_producto INT, p_forma_pago VARCHAR(20), p_id_cliente INT, p_fecha DATE |
 | `sp_ajustar_precios` | Procedimiento | p_categoria VARCHAR(40), p_plataforma VARCHAR(40), p_porcentaje DECIMAL(5,2) |
 | `sp_bajo_stock` | Procedimiento | p_id_sucursal INT |
+| `sp_categorias_actualizar` | Procedimiento | p_id_categoria INT, p_nombre VARCHAR(40), p_descripcion VARCHAR(150) |
+| `sp_categorias_consultar` | Procedimiento | p_id_categoria INT |
+| `sp_categorias_crear` | Procedimiento | p_nombre VARCHAR(40), p_descripcion VARCHAR(150), OUT p_id_categoria INT |
+| `sp_categorias_eliminar` | Procedimiento | p_id_categoria INT |
+| `sp_clientes_actualizar` | Procedimiento | p_id_cliente INT, p_nombre VARCHAR(50), p_apellido VARCHAR(50), p_correo VARCHAR(120), p_telefono VARCHAR(20), p_fecha_nacimiento DATE, p_id_estado INT |
+| `sp_clientes_consultar` | Procedimiento | p_id_cliente INT |
+| `sp_clientes_crear` | Procedimiento | p_nombre VARCHAR(50), p_apellido VARCHAR(50), p_correo VARCHAR(120), p_telefono VARCHAR(20), p_fecha_nacimiento DATE, p_id_estado INT, OUT p_id_cliente INT |
+| `sp_clientes_eliminar` | Procedimiento | p_id_cliente INT |
+| `sp_empleados_actualizar` | Procedimiento | p_id_empleado INT, p_nombre VARCHAR(50), p_apellido VARCHAR(50), p_correo VARCHAR(120), p_telefono VARCHAR(20), p_puesto VARCHAR(30), p_salario_hora DECIMAL(6,2), p_fecha_contratacion DATE, p_id_sucursal INT, p_id_supervisor INT |
+| `sp_empleados_consultar` | Procedimiento | p_id_empleado INT |
+| `sp_empleados_crear` | Procedimiento | p_nombre VARCHAR(50), p_apellido VARCHAR(50), p_correo VARCHAR(120), p_telefono VARCHAR(20), p_puesto VARCHAR(30), p_salario_hora DECIMAL(6,2), p_fecha_contratacion DATE, p_id_sucursal INT, p_id_supervisor INT, OUT p_id_empleado INT |
+| `sp_empleados_eliminar` | Procedimiento | p_id_empleado INT |
 | `sp_generar_reabasto` | Procedimiento | p_id_sucursal INT, p_id_empleado INT, p_fecha DATE |
 | `sp_historial_cliente` | Procedimiento | p_correo VARCHAR(120) |
+| `sp_plataformas_actualizar` | Procedimiento | p_id_plataforma INT, p_nombre VARCHAR(40), p_fabricante VARCHAR(40), p_generacion TINYINT, p_fecha_lanzamiento DATE |
+| `sp_plataformas_consultar` | Procedimiento | p_id_plataforma INT |
+| `sp_plataformas_crear` | Procedimiento | p_nombre VARCHAR(40), p_fabricante VARCHAR(40), p_generacion TINYINT, p_fecha_lanzamiento DATE, OUT p_id_plataforma INT |
+| `sp_plataformas_eliminar` | Procedimiento | p_id_plataforma INT |
+| `sp_productos_actualizar` | Procedimiento | p_id_producto INT, p_sku VARCHAR(20), p_nombre VARCHAR(120), p_id_categoria INT, p_id_plataforma INT, p_id_proveedor INT, p_condicion VARCHAR(20), p_clasificacion_esrb VARCHAR(5), p_precio_venta DECIMAL(8,2), p_costo DECIMAL(8,2), p_fecha_lanzamiento DATE |
+| `sp_productos_consultar` | Procedimiento | p_id_producto INT |
+| `sp_productos_crear` | Procedimiento | p_sku VARCHAR(20), p_nombre VARCHAR(120), p_id_categoria INT, p_id_plataforma INT, p_id_proveedor INT, p_condicion VARCHAR(20), p_clasificacion_esrb VARCHAR(5), p_precio_venta DECIMAL(8,2), p_costo DECIMAL(8,2), p_fecha_lanzamiento DATE, OUT p_id_producto INT |
+| `sp_productos_eliminar` | Procedimiento | p_id_producto INT |
+| `sp_proveedores_actualizar` | Procedimiento | p_id_proveedor INT, p_nombre VARCHAR(80), p_contacto VARCHAR(80), p_telefono VARCHAR(20), p_correo VARCHAR(120), p_ciudad VARCHAR(60), p_id_estado INT |
+| `sp_proveedores_consultar` | Procedimiento | p_id_proveedor INT |
+| `sp_proveedores_crear` | Procedimiento | p_nombre VARCHAR(80), p_contacto VARCHAR(80), p_telefono VARCHAR(20), p_correo VARCHAR(120), p_ciudad VARCHAR(60), p_id_estado INT, OUT p_id_proveedor INT |
+| `sp_proveedores_eliminar` | Procedimiento | p_id_proveedor INT |
 | `sp_recibir_orden` | Procedimiento | p_id_orden INT, p_fecha DATE |
 | `sp_registrar_venta` | Procedimiento | p_id_sucursal INT, p_id_empleado INT, p_id_cliente INT, p_metodo_pago VARCHAR(20), p_articulos JSON, OUT p_id_venta INT |
 | `sp_renovar_pro` | Procedimiento | p_id_cliente INT, p_fecha DATE |
 | `sp_reporte_ventas` | Procedimiento | p_inicio DATE, p_fin DATE |
+| `sp_sucursales_actualizar` | Procedimiento | p_id_sucursal INT, p_numero_tienda SMALLINT, p_nombre VARCHAR(80), p_direccion VARCHAR(150), p_ciudad VARCHAR(60), p_id_estado INT, p_codigo_postal CHAR(5), p_telefono VARCHAR(20), p_fecha_apertura DATE |
+| `sp_sucursales_consultar` | Procedimiento | p_id_sucursal INT |
+| `sp_sucursales_crear` | Procedimiento | p_numero_tienda SMALLINT, p_nombre VARCHAR(80), p_direccion VARCHAR(150), p_ciudad VARCHAR(60), p_id_estado INT, p_codigo_postal CHAR(5), p_telefono VARCHAR(20), p_fecha_apertura DATE, OUT p_id_sucursal INT |
+| `sp_sucursales_eliminar` | Procedimiento | p_id_sucursal INT |
 | `sp_transferir_inventario` | Procedimiento | p_origen INT, p_destino INT, p_sku VARCHAR(20), p_cantidad INT |

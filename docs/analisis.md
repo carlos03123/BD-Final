@@ -61,6 +61,8 @@ Sin una base de datos central, cada tienda tendría que llevar por separado:
 | RF-13 | Contratar o renovar la membresía GameStop Pro | `sp_renovar_pro` |
 | RF-14 | Reportes: ventas por tienda, estado, producto, categoría, vendedor y día; inventario valorizado; clientes | 7 vistas, procedimientos de reporte, 30 consultas |
 | RF-15 | Consultar los datos desde una interfaz web | `app/` (Flask) |
+| RF-16 | Auditar cada alta, cambio y baja de todas las tablas (qué cambió, quién y cuándo) | 21 tablas `aud_<tabla>` con triggers (`09_auditoria.sql`) |
+| RF-17 | Dar de alta, consultar, modificar y dar de baja tiendas, empleados, clientes, categorías, plataformas, proveedores y productos | 28 procedimientos CRUD (`10_crud.sql`) |
 
 ## 6. Reglas de negocio
 
@@ -90,7 +92,7 @@ Sin una base de datos central, cada tienda tendría que llevar por separado:
 | RNF-01 | **Integridad:** los datos siempre son consistentes | PK, FK, CHECK, UNIQUE, ENUM y triggers |
 | RNF-02 | **Atomicidad:** una venta se guarda completa o no se guarda | Transacciones con `ROLLBACK` en los procedimientos |
 | RNF-03 | **Seguridad:** cada usuario ve y modifica solo lo que necesita | Roles y privilegios por tabla y por columna, caducidad de contraseña y bloqueo por intentos fallidos |
-| RNF-04 | **Auditoría:** saber quién cambió un precio | `bitacora_precios` llenada por trigger |
+| RNF-04 | **Auditoría:** saber quién cambió cualquier dato, cuándo y cuál era el valor anterior | `bitacora_precios` y las 21 tablas `aud_<tabla>`, llenadas por triggers e inmodificables |
 | RNF-05 | **Rendimiento:** reportes rápidos | Índices por fecha, por tienda y por producto; totales guardados en la venta |
 | RNF-06 | **Internacionalización:** acentos y caracteres especiales (Pokémon, Yōtei) | `utf8mb4` |
 | RNF-07 | **Portabilidad:** la base se puede recrear desde cero | Scripts numerados que se pueden volver a ejecutar |

@@ -72,6 +72,8 @@ Así, si Texas cambia su impuesto, solo se actualiza **un renglón** de `estados
 
 Esta es una **desnormalización controlada**: el dato derivado se guarda, pero solo lo modifica la propia base de datos (triggers), nunca la aplicación.
 
+**Tablas de auditoría (`aud_<tabla>`).** No se normalizan a propósito. Cada registro guarda una *foto* completa del renglón antes y después del cambio en columnas `JSON`. Así, si mañana se agrega una columna a `clientes`, la auditoría la registra sin cambiar su estructura, y el historial no depende de que los registros relacionados sigan existiendo. Por ejemplo, un cliente borrado sigue apareciendo en `aud_clientes` con todos sus datos.
+
 ## 6. Integridad
 
 | Tipo | Cómo se implementa |

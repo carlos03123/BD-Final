@@ -1,29 +1,12 @@
-=====================================================================
---  Archivo 10: procedimientos almacenados CRUD
---  Ejecutar después de 09_auditoria.sql
---
---  Para 7 entidades se crean 4 procedimientos cada una (28 en total):
---     sp_<entidad>_crear       alta;  devuelve el id nuevo en un parámetro OUT
---     sp_<entidad>_consultar   uno (con su id) o todos (con NULL)
---     sp_<entidad>_actualizar  cambia todos los campos del registro
---     sp_<entidad>_eliminar    baja
---
---  Bajas:
---   - sucursales, empleados y productos usan BAJA LÓGICA (activa/activo = FALSE),
---     porque tienen historial de ventas que no se debe perder.
---   - las demás se borran físicamente, pero si tienen registros relacionados
---     la llave foránea lo impide y el procedimiento devuelve un mensaje claro.
---
---  Todas las operaciones quedan registradas en las tablas aud_<tabla>.
--- =====================================================================
+
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- =====================================================================
+
 -- SUCURSALES: tiendas
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_sucursales_crear;
 DELIMITER $$
@@ -111,9 +94,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- EMPLEADOS: personal
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_empleados_crear;
 DELIMITER $$
@@ -204,9 +187,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- CLIENTES: clientes
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_clientes_crear;
 DELIMITER $$
@@ -289,9 +272,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- CATEGORIAS: categorías de producto
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_categorias_crear;
 DELIMITER $$
@@ -358,9 +341,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- PLATAFORMAS: plataformas (consolas)
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_plataformas_crear;
 DELIMITER $$
@@ -433,9 +416,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- PROVEEDORES: proveedores
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_proveedores_crear;
 DELIMITER $$
@@ -518,9 +501,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- PRODUCTOS: catálogo de productos
--- =====================================================================
+
 
 DROP PROCEDURE IF EXISTS sp_productos_crear;
 DELIMITER $$
@@ -614,13 +597,13 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+
 -- Permisos por rol
 --   administrador: todo (ya lo tiene por rol_admin)
 --   gerente:       todo el CRUD
 --   vendedor (usuario): consultar y dar de alta/actualizar clientes; consultar catálogo
 --   analista:      solo consultar
--- =====================================================================
+
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_sucursales_crear TO 'rol_gerente';
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_sucursales_consultar TO 'rol_gerente';
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_sucursales_actualizar TO 'rol_gerente';
@@ -664,10 +647,10 @@ GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_plataformas_consultar TO 'rol_analist
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_proveedores_consultar TO 'rol_analista';
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_productos_consultar TO 'rol_analista';
 
--- =====================================================================
+
 -- Ejemplo completo con clientes: crear -> consultar -> actualizar -> eliminar
 -- (al final se revisa lo que quedó en la auditoría)
--- =====================================================================
+
 CALL sp_clientes_crear('Ana', 'Prueba', 'ana.prueba@email.com', '(214) 555-0199', '2001-05-20', 1, @nuevo);
 SELECT @nuevo AS id_cliente_creado;
 

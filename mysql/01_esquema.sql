@@ -44,9 +44,7 @@ CREATE TABLE empleados (
   CONSTRAINT fk_emp_supervisor FOREIGN KEY (id_supervisor) REFERENCES empleados(id_empleado)
 ) ENGINE=InnoDB COMMENT='Personal de tienda; id_supervisor es una relación recursiva';
 
--- =====================================================================
--- 2. CLIENTES Y PROGRAMA DE LEALTAD
--- =====================================================================
+#CLIENTES Y PROGRAMA DE LEALTAD#
 
 CREATE TABLE niveles_membresia (
   id_nivel              INT AUTO_INCREMENT PRIMARY KEY,

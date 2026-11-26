@@ -1,4 +1,3 @@
- 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;

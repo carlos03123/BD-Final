@@ -1,14 +1,14 @@
--- =====================================================================
+  
 --  Archivo 3 de 8: procedimientos almacenados
 --  Incluye procedimientos con TRANSACCIONES, manejo de errores,
 --  CURSORES y JSON_TABLE.
--- =====================================================================
+  
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- ---------------------------------------------------------------------
+   
 -- 1. Registrar una venta completa en una sola transacción.
 --    Los artículos se mandan como JSON. Si un artículo falla (sin
 --    existencia, sin crédito...), se deshace toda la venta.
@@ -16,7 +16,7 @@ USE gamestop_usa;
 --    CALL sp_registrar_venta(1, 3, 5, 'Tarjeta de crédito',
 --         '[{"sku":"VJ-PS5-GTA6","cantidad":1},{"sku":"ACC-PS5-DS","cantidad":2}]', @id);
 --    SELECT @id;
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_registrar_venta;
 DELIMITER $$
 CREATE PROCEDURE sp_registrar_venta(
@@ -65,11 +65,11 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 2. Recibir una orden de compra: suma la mercancía al inventario
 --    de la tienda y actualiza el costo del producto (transacción).
 --    CALL sp_recibir_orden(5, '2026-11-20');
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_recibir_orden;
 DELIMITER $$
 CREATE PROCEDURE sp_recibir_orden(IN p_id_orden INT, IN p_fecha DATE)
@@ -112,13 +112,13 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 3. Generar órdenes de reabasto automáticas para una tienda:
 --    recorre (CURSOR) los proveedores con productos bajo el mínimo y
 --    crea una orden por proveedor pidiendo lo necesario para llegar
 --    al doble del stock mínimo.
 --    CALL sp_generar_reabasto(1, 1, '2026-11-23');
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_generar_reabasto;
 DELIMITER $$
 CREATE PROCEDURE sp_generar_reabasto(IN p_id_sucursal INT, IN p_id_empleado INT, IN p_fecha DATE)
@@ -167,10 +167,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 4. Transferir mercancía entre tiendas (transacción con bloqueo)
 --    CALL sp_transferir_inventario(1, 2, 'CON-PS5-SLM', 2);
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_transferir_inventario;
 DELIMITER $$
 CREATE PROCEDURE sp_transferir_inventario(IN p_origen INT, IN p_destino INT,
@@ -214,10 +214,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 5. Contratar o renovar GameStop Pro por un año
 --    CALL sp_renovar_pro(12, '2026-11-23');
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_renovar_pro;
 DELIMITER $$
 CREATE PROCEDURE sp_renovar_pro(IN p_id_cliente INT, IN p_fecha DATE)
@@ -241,11 +241,11 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 6. Cambiar precios de una categoría/plataforma por porcentaje
 --    (ej. ofertas de Black Friday). La bitácora se llena por trigger.
 --    CALL sp_ajustar_precios('Videojuego', 'PlayStation 5', -20);
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_ajustar_precios;
 DELIMITER $$
 CREATE PROCEDURE sp_ajustar_precios(IN p_categoria VARCHAR(40), IN p_plataforma VARCHAR(40),
@@ -264,10 +264,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 7. Reporte de ventas por tienda en un rango de fechas
 --    CALL sp_reporte_ventas('2026-11-01', '2026-11-30');
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_reporte_ventas;
 DELIMITER $$
 CREATE PROCEDURE sp_reporte_ventas(IN p_inicio DATE, IN p_fin DATE)
@@ -287,10 +287,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 8. Productos en o debajo del stock mínimo de una tienda
 --    CALL sp_bajo_stock(1);
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_bajo_stock;
 DELIMITER $$
 CREATE PROCEDURE sp_bajo_stock(IN p_id_sucursal INT)
@@ -307,10 +307,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ---------------------------------------------------------------------
+   
 -- 9. Historial de compras de un cliente
 --    CALL sp_historial_cliente('olivia.johnson@email.com');
--- ---------------------------------------------------------------------
+   
 DROP PROCEDURE IF EXISTS sp_historial_cliente;
 DELIMITER $$
 CREATE PROCEDURE sp_historial_cliente(IN p_correo VARCHAR(120))

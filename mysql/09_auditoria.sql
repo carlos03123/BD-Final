@@ -1,26 +1,12 @@
--- =====================================================================
---  Archivo 9: auditoría
---  Ejecutar después de 07_seguridad.sql
---
---  Cada tabla del sistema tiene su propia tabla de auditoría aud_<tabla>
---  (21 en total; bitacora_precios ya es una tabla de auditoría y no se audita).
---  Tres triggers por tabla registran automáticamente:
---     INSERT -> los datos nuevos
---     UPDATE -> los datos anteriores y los nuevos
---     DELETE -> los datos que se borraron
---  junto con la llave del registro, el usuario de MySQL y la fecha.
---
---  Los registros de auditoría no se pueden modificar ni borrar: otros dos
---  triggers por tabla lo impiden, incluso para el administrador.
--- =====================================================================
+
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- ---------------------------------------------------------------------
+  
 -- estados  (llave: id_estado)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_estados;
 CREATE TABLE aud_estados (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -57,9 +43,9 @@ DROP TRIGGER IF EXISTS trg_aud_estados_no_borrar;
 CREATE TRIGGER trg_aud_estados_no_borrar BEFORE DELETE ON aud_estados FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- sucursales  (llave: id_sucursal)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_sucursales;
 CREATE TABLE aud_sucursales (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -96,9 +82,9 @@ DROP TRIGGER IF EXISTS trg_aud_sucursales_no_borrar;
 CREATE TRIGGER trg_aud_sucursales_no_borrar BEFORE DELETE ON aud_sucursales FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- empleados  (llave: id_empleado)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_empleados;
 CREATE TABLE aud_empleados (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -135,9 +121,9 @@ DROP TRIGGER IF EXISTS trg_aud_empleados_no_borrar;
 CREATE TRIGGER trg_aud_empleados_no_borrar BEFORE DELETE ON aud_empleados FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- niveles_membresia  (llave: id_nivel)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_niveles_membresia;
 CREATE TABLE aud_niveles_membresia (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -174,9 +160,9 @@ DROP TRIGGER IF EXISTS trg_aud_niveles_membresia_no_borrar;
 CREATE TRIGGER trg_aud_niveles_membresia_no_borrar BEFORE DELETE ON aud_niveles_membresia FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- clientes  (llave: id_cliente)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_clientes;
 CREATE TABLE aud_clientes (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -213,9 +199,9 @@ DROP TRIGGER IF EXISTS trg_aud_clientes_no_borrar;
 CREATE TRIGGER trg_aud_clientes_no_borrar BEFORE DELETE ON aud_clientes FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- categorias  (llave: id_categoria)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_categorias;
 CREATE TABLE aud_categorias (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -252,9 +238,9 @@ DROP TRIGGER IF EXISTS trg_aud_categorias_no_borrar;
 CREATE TRIGGER trg_aud_categorias_no_borrar BEFORE DELETE ON aud_categorias FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- plataformas  (llave: id_plataforma)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_plataformas;
 CREATE TABLE aud_plataformas (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -291,9 +277,9 @@ DROP TRIGGER IF EXISTS trg_aud_plataformas_no_borrar;
 CREATE TRIGGER trg_aud_plataformas_no_borrar BEFORE DELETE ON aud_plataformas FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- generos  (llave: id_genero)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_generos;
 CREATE TABLE aud_generos (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -330,9 +316,9 @@ DROP TRIGGER IF EXISTS trg_aud_generos_no_borrar;
 CREATE TRIGGER trg_aud_generos_no_borrar BEFORE DELETE ON aud_generos FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- proveedores  (llave: id_proveedor)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_proveedores;
 CREATE TABLE aud_proveedores (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -369,9 +355,9 @@ DROP TRIGGER IF EXISTS trg_aud_proveedores_no_borrar;
 CREATE TRIGGER trg_aud_proveedores_no_borrar BEFORE DELETE ON aud_proveedores FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- productos  (llave: id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_productos;
 CREATE TABLE aud_productos (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -408,9 +394,9 @@ DROP TRIGGER IF EXISTS trg_aud_productos_no_borrar;
 CREATE TRIGGER trg_aud_productos_no_borrar BEFORE DELETE ON aud_productos FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- producto_genero  (llave: id_producto, id_genero)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_producto_genero;
 CREATE TABLE aud_producto_genero (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -447,9 +433,9 @@ DROP TRIGGER IF EXISTS trg_aud_producto_genero_no_borrar;
 CREATE TRIGGER trg_aud_producto_genero_no_borrar BEFORE DELETE ON aud_producto_genero FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- inventario  (llave: id_sucursal, id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_inventario;
 CREATE TABLE aud_inventario (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -486,9 +472,9 @@ DROP TRIGGER IF EXISTS trg_aud_inventario_no_borrar;
 CREATE TRIGGER trg_aud_inventario_no_borrar BEFORE DELETE ON aud_inventario FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- ventas  (llave: id_venta)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_ventas;
 CREATE TABLE aud_ventas (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -525,9 +511,9 @@ DROP TRIGGER IF EXISTS trg_aud_ventas_no_borrar;
 CREATE TRIGGER trg_aud_ventas_no_borrar BEFORE DELETE ON aud_ventas FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- detalle_venta  (llave: id_venta, id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_detalle_venta;
 CREATE TABLE aud_detalle_venta (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -564,9 +550,9 @@ DROP TRIGGER IF EXISTS trg_aud_detalle_venta_no_borrar;
 CREATE TRIGGER trg_aud_detalle_venta_no_borrar BEFORE DELETE ON aud_detalle_venta FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- devoluciones  (llave: id_devolucion)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_devoluciones;
 CREATE TABLE aud_devoluciones (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -603,9 +589,9 @@ DROP TRIGGER IF EXISTS trg_aud_devoluciones_no_borrar;
 CREATE TRIGGER trg_aud_devoluciones_no_borrar BEFORE DELETE ON aud_devoluciones FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- detalle_devolucion  (llave: id_devolucion, id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_detalle_devolucion;
 CREATE TABLE aud_detalle_devolucion (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -642,9 +628,9 @@ DROP TRIGGER IF EXISTS trg_aud_detalle_devolucion_no_borrar;
 CREATE TRIGGER trg_aud_detalle_devolucion_no_borrar BEFORE DELETE ON aud_detalle_devolucion FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- intercambios  (llave: id_intercambio)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_intercambios;
 CREATE TABLE aud_intercambios (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -681,9 +667,9 @@ DROP TRIGGER IF EXISTS trg_aud_intercambios_no_borrar;
 CREATE TRIGGER trg_aud_intercambios_no_borrar BEFORE DELETE ON aud_intercambios FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- detalle_intercambio  (llave: id_intercambio, id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_detalle_intercambio;
 CREATE TABLE aud_detalle_intercambio (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -720,9 +706,9 @@ DROP TRIGGER IF EXISTS trg_aud_detalle_intercambio_no_borrar;
 CREATE TRIGGER trg_aud_detalle_intercambio_no_borrar BEFORE DELETE ON aud_detalle_intercambio FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- preventas  (llave: id_preventa)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_preventas;
 CREATE TABLE aud_preventas (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -759,9 +745,9 @@ DROP TRIGGER IF EXISTS trg_aud_preventas_no_borrar;
 CREATE TRIGGER trg_aud_preventas_no_borrar BEFORE DELETE ON aud_preventas FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- ordenes_compra  (llave: id_orden)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_ordenes_compra;
 CREATE TABLE aud_ordenes_compra (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -798,9 +784,9 @@ DROP TRIGGER IF EXISTS trg_aud_ordenes_compra_no_borrar;
 CREATE TRIGGER trg_aud_ordenes_compra_no_borrar BEFORE DELETE ON aud_ordenes_compra FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- ---------------------------------------------------------------------
+  
 -- detalle_orden_compra  (llave: id_orden, id_producto)
--- ---------------------------------------------------------------------
+  
 DROP TABLE IF EXISTS aud_detalle_orden_compra;
 CREATE TABLE aud_detalle_orden_compra (
   id_auditoria     BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -837,9 +823,9 @@ DROP TRIGGER IF EXISTS trg_aud_detalle_orden_compra_no_borrar;
 CREATE TRIGGER trg_aud_detalle_orden_compra_no_borrar BEFORE DELETE ON aud_detalle_orden_compra FOR EACH ROW
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Los registros de auditoría no se pueden borrar';
 
--- =====================================================================
+ 
 -- Vista v_auditoria: todos los movimientos de todas las tablas en un solo lugar
--- =====================================================================
+ 
 CREATE OR REPLACE VIEW v_auditoria AS
 SELECT 'estados' AS tabla, id_auditoria, operacion, llave, datos_anteriores, datos_nuevos, usuario, fecha FROM aud_estados
 UNION ALL
@@ -894,9 +880,9 @@ SELECT tabla,
   FROM v_auditoria
  GROUP BY tabla;
 
--- =====================================================================
+ 
 -- Permisos: solo el administrador y el analista consultan la auditoría
--- =====================================================================
+ 
 GRANT SELECT ON gamestop_usa.v_auditoria         TO 'rol_analista';
 GRANT SELECT ON gamestop_usa.v_auditoria_resumen TO 'rol_analista';
 
@@ -958,9 +944,9 @@ GRANT SELECT ON gamestop_usa.v_ventas_diarias TO 'rol_gerente';
 GRANT SELECT ON gamestop_usa.v_auditoria TO 'rol_gerente';
 GRANT SELECT ON gamestop_usa.v_auditoria_resumen TO 'rol_gerente';
 
--- =====================================================================
+ 
 -- Ejemplos de consulta
--- =====================================================================
+ 
 
 -- Movimientos por tabla
 SELECT * FROM v_auditoria_resumen ORDER BY total DESC;

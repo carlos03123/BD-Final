@@ -1,23 +1,6 @@
-// =====================================================================
+
 //  BASE DE DATOS: gamestop_usa (MongoDB)
-//  Archivo 1 de 4: colecciones con validación ($jsonSchema), índices y vistas
-//
-//  Ejecutar:  mongosh mongodb/01_colecciones.js
-//  (o pegar en la pestaña "Mongosh" de MongoDB Compass)
-//
-//  DISEÑO DOCUMENTAL — qué se embebe y qué se referencia:
-//
-//    sucursales      -> empleados EMBEBIDOS (siempre se consultan con su tienda)
-//                       y el estado con su tasa de impuesto
-//    productos       -> géneros e inventario por tienda EMBEBIDOS; _id = SKU
-//    clientes        -> membresía EMBEBIDA
-//    ventas          -> artículos y devoluciones EMBEBIDOS. Del producto se COPIA
-//                       nombre, categoría y precio al momento de vender (así el
-//                       ticket no cambia aunque luego cambie el catálogo)
-//    intercambios, ordenes_compra -> artículos EMBEBIDOS
-//    cliente, proveedor, empleado y sucursal se REFERENCIAN por _id
-//    (se unen con $lookup cuando hace falta)
-// =====================================================================
+
 
 db = db.getSiblingDB("gamestop_usa");
 db.dropDatabase();
@@ -25,9 +8,9 @@ db.dropDatabase();
 var dinero = { bsonType: ["double", "int", "long", "decimal"], minimum: 0 };
 var fecha  = { bsonType: "date" };
 
-// ---------------------------------------------------------------------
+ 
 // niveles_membresia
-// ---------------------------------------------------------------------
+ 
 db.createCollection("niveles_membresia", { validator: { $jsonSchema: {
   bsonType: "object",
   required: ["_id", "nombre", "costo_anual", "puntos_por_dolar"],
@@ -39,9 +22,9 @@ db.createCollection("niveles_membresia", { validator: { $jsonSchema: {
     puntos_por_dolar: { bsonType: "int", minimum: 0 }
   } } } });
 
-// ---------------------------------------------------------------------
+ 
 // sucursales (con empleados embebidos)
-// ---------------------------------------------------------------------
+ 
 db.createCollection("sucursales", { validator: { $jsonSchema: {
   bsonType: "object",
   required: ["_id", "numero_tienda", "nombre", "direccion", "ciudad", "estado", "codigo_postal", "empleados"],
@@ -62,9 +45,9 @@ db.createCollection("sucursales", { validator: { $jsonSchema: {
       } } }
   } } } });
 
-// ---------------------------------------------------------------------
+ 
 // clientes
-// ---------------------------------------------------------------------
+ 
 db.createCollection("clientes", { validator: { $jsonSchema: {
   bsonType: "object",
   required: ["_id", "nombre", "apellido", "correo", "estado", "membresia", "puntos", "credito_tienda"],
@@ -81,9 +64,9 @@ db.createCollection("proveedores", { validator: { $jsonSchema: {
   bsonType: "object", required: ["_id", "nombre"],
   properties: { nombre: { bsonType: "string" } } } } });
 
-// ---------------------------------------------------------------------
+ 
 // productos (con inventario embebido)
-// ---------------------------------------------------------------------
+ 
 db.createCollection("productos", { validator: { $jsonSchema: {
   bsonType: "object",
   required: ["_id", "nombre", "categoria", "condicion", "precio_venta", "costo", "activo", "inventario"],
@@ -104,9 +87,9 @@ db.createCollection("productos", { validator: { $jsonSchema: {
   // regla entre campos: el precio no puede ser menor al costo
   $expr: { $gte: ["$precio_venta", "$costo"] } } });
 
-// ---------------------------------------------------------------------
+ 
 // ventas (artículos y devoluciones embebidos)
-// ---------------------------------------------------------------------
+ 
 db.createCollection("ventas", { validator: { $jsonSchema: {
   bsonType: "object",
   required: ["_id", "fecha", "sucursal", "empleado", "metodo_pago", "articulos", "subtotal", "impuesto", "total", "estado"],
@@ -142,9 +125,9 @@ db.createCollection("ordenes_compra", { validator: { $jsonSchema: {
 
 db.createCollection("bitacora_precios");
 
-// ---------------------------------------------------------------------
+ 
 // Índices
-// ---------------------------------------------------------------------
+ 
 db.sucursales.createIndex({ numero_tienda: 1 }, { unique: true });
 db.sucursales.createIndex({ "empleados._id": 1 });
 db.sucursales.createIndex({ "empleados.correo": 1 }, { unique: true });
@@ -161,9 +144,9 @@ db.intercambios.createIndex({ cliente: 1 });
 db.preventas.createIndex({ cliente: 1, producto: 1, estado: 1 }, { unique: true });
 db.ordenes_compra.createIndex({ sucursal: 1, estado: 1 });
 
-// ---------------------------------------------------------------------
+ 
 // Vistas (equivalentes a las vistas de MySQL)
-// ---------------------------------------------------------------------
+ 
 
 // Ventas por tienda
 db.createView("v_ventas_tienda", "ventas", [

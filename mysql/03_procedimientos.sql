@@ -1,8 +1,4 @@
-  
---  Archivo 3 de 8: procedimientos almacenados
---  Incluye procedimientos con TRANSACCIONES, manejo de errores,
---  CURSORES y JSON_TABLE.
-  
+
 
 SET NAMES utf8mb4;
 

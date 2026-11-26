@@ -1,33 +1,12 @@
-// =====================================================================
+ 
 //  BASE DE DATOS: gamestop_usa (MongoDB)
-//  Archivo 3 de 4: operaciones con reglas de negocio + pruebas
-//
-//  En MySQL las reglas viven en triggers y procedimientos. En MongoDB
-//  viven en la aplicación; aquí se programan como funciones de JavaScript
-//  que hacen lo mismo:
-//
-//    registrarVenta()       -> valida empleado, existencia, producto activo y
-//                              crédito; calcula descuento Pro, impuesto, total;
-//                              descuenta inventario; suma puntos; cobra crédito
-//    registrarDevolucion()  -> plazo de 30 días, cantidades, reembolso con
-//                              impuesto, regresa inventario, quita puntos
-//    registrarIntercambio() -> solo usados; 25% efectivo / 35% crédito (+bono Pro)
-//    recibirOrden()         -> suma la mercancía al inventario
-//    cambiarPrecio()        -> no permite precio < costo; escribe la bitácora
-//
-//  Si el servidor es un replica set (MongoDB Atlas, por ejemplo) cada
-//  operación corre dentro de una TRANSACCIÓN; en un servidor local
-//  sencillo (standalone) corre sin transacción.
-//
-//  Ejecutar después de 02_datos.js:   mongosh mongodb/03_operaciones.js
-//  OJO: este archivo modifica datos (agrega una venta, un intercambio...).
-// =====================================================================
+
 
 db = db.getSiblingDB("gamestop_usa");
 
-// ---------------------------------------------------------------------
+  
 // Utilidades
-// ---------------------------------------------------------------------
+  
 // redondeo a centavos (los números de JavaScript son de punto flotante)
 var r2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100;
 var err = (msg) => { throw new Error(msg); };
@@ -78,9 +57,9 @@ function sumarInventario(sku, sucursal, cantidad, stockMinimo) {
     db.productos.updateOne({ _id: sku }, { $push: { inventario: { sucursal, existencia: cantidad, stock_minimo: stockMinimo } } });
 }
 
-// ---------------------------------------------------------------------
+  
 // registrarVenta
-// ---------------------------------------------------------------------
+  
 function registrarVenta({ sucursal, empleado, cliente = null, metodo_pago, articulos, fecha = new Date() }) {
   return enTransaccion(() => {
     const tienda = db.sucursales.findOne({ _id: sucursal });
@@ -133,9 +112,9 @@ function registrarVenta({ sucursal, empleado, cliente = null, metodo_pago, artic
   });
 }
 
-// ---------------------------------------------------------------------
+  
 // registrarDevolucion
-// ---------------------------------------------------------------------
+  
 function registrarDevolucion(idVenta, { empleado, motivo, articulos, fecha = new Date() }) {
   return enTransaccion(() => {
     const v = db.ventas.findOne({ _id: idVenta });
@@ -174,9 +153,9 @@ function registrarDevolucion(idVenta, { empleado, motivo, articulos, fecha = new
   });
 }
 
-// ---------------------------------------------------------------------
+  
 // registrarIntercambio
-// ---------------------------------------------------------------------
+  
 function registrarIntercambio({ sucursal, empleado, cliente, forma_pago, articulos, fecha = new Date() }) {
   return enTransaccion(() => {
     if (!db.clientes.findOne({ _id: cliente })) err("El cliente no existe");
@@ -202,9 +181,9 @@ function registrarIntercambio({ sucursal, empleado, cliente, forma_pago, articul
   });
 }
 
-// ---------------------------------------------------------------------
+  
 // recibirOrden
-// ---------------------------------------------------------------------
+  
 function recibirOrden(idOrden, fecha = new Date()) {
   return enTransaccion(() => {
     const o = db.ordenes_compra.findOne({ _id: idOrden });
@@ -215,9 +194,9 @@ function recibirOrden(idOrden, fecha = new Date()) {
   });
 }
 
-// ---------------------------------------------------------------------
+  
 // cambiarPrecio (con bitácora)
-// ---------------------------------------------------------------------
+  
 function cambiarPrecio(sku, nuevo, usuario = "mongosh") {
   return enTransaccion(() => {
     const p = db.productos.findOne({ _id: sku });
@@ -229,9 +208,9 @@ function cambiarPrecio(sku, nuevo, usuario = "mongosh") {
   });
 }
 
-// =====================================================================
+ 
 // PRUEBAS
-// =====================================================================
+ 
 function probar(nombre, fn) {
   try { const r = fn(); print("ACEPTADA   " + nombre + (r !== undefined ? "  -> " + JSON.stringify(r) : "")); }
   catch (e) { print("RECHAZADA  " + nombre + "  -> " + e.message); }

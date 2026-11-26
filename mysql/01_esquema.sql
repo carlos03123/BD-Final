@@ -1,23 +1,11 @@
--- =====================================================================
---  BASE DE DATOS: gamestop_usa
---  Cadena de tiendas de videojuegos GameStop en Estados Unidos
---  Motor: MySQL 8.0.13 o superior  (MySQL Workbench)
---
---  Archivo 1 de 8: crea la base de datos y sus 22 tablas
--- =====================================================================
-
 SET NAMES utf8mb4;
 
 DROP DATABASE IF EXISTS gamestop_usa;
 CREATE DATABASE gamestop_usa
   CHARACTER SET utf8mb4
-  COLLATE utf8mb4_0900_ai_ci;   -- intercalación por defecto de MySQL 8 (la misma que usa Workbench)
+  COLLATE utf8mb4_0900_ai_ci;   
 
 USE gamestop_usa;
-
--- =====================================================================
--- 1. UBICACIÓN, TIENDAS Y PERSONAL
--- =====================================================================
 
 CREATE TABLE estados (
   id_estado       INT AUTO_INCREMENT PRIMARY KEY,
@@ -86,9 +74,7 @@ CREATE TABLE clientes (
   CONSTRAINT fk_cli_nivel  FOREIGN KEY (id_nivel)  REFERENCES niveles_membresia(id_nivel)
 ) ENGINE=InnoDB COMMENT='Clientes registrados en el programa de lealtad';
 
--- =====================================================================
--- 3. CATÁLOGO DE PRODUCTOS
--- =====================================================================
+#CATÁLOGO DE PRODUCTOS#
 
 CREATE TABLE categorias (
   id_categoria  INT AUTO_INCREMENT PRIMARY KEY,
@@ -255,9 +241,7 @@ CREATE TABLE preventas (
   UNIQUE KEY uq_preventa (id_cliente, id_producto, estado)
 ) ENGINE=InnoDB COMMENT='Apartados de productos antes de su lanzamiento';
 
--- =====================================================================
--- 6. COMPRAS A PROVEEDORES Y AUDITORÍA
--- =====================================================================
+#COMPRAS A PROVEEDORES Y AUDITORÍA#
 
 CREATE TABLE ordenes_compra (
   id_orden         INT AUTO_INCREMENT PRIMARY KEY,

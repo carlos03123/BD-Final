@@ -144,9 +144,9 @@ CREATE TABLE inventario (
   CONSTRAINT fk_inv_producto FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 ) ENGINE=InnoDB COMMENT='Existencias de cada producto en cada tienda (N:M sucursales-productos)';
 
--- =====================================================================
+ 
 -- 4. VENTAS Y DEVOLUCIONES
--- =====================================================================
+ 
 
 CREATE TABLE ventas (
   id_venta     INT AUTO_INCREMENT PRIMARY KEY,
@@ -198,9 +198,9 @@ CREATE TABLE detalle_devolucion (
   CONSTRAINT fk_ddev_producto   FOREIGN KEY (id_producto)   REFERENCES productos(id_producto)
 ) ENGINE=InnoDB;
 
--- =====================================================================
+ 
 -- 5. INTERCAMBIOS (TRADE-INS) Y PREVENTAS
--- =====================================================================
+ 
 
 CREATE TABLE intercambios (
   id_intercambio INT AUTO_INCREMENT PRIMARY KEY,

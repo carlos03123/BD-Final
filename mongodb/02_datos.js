@@ -1,14 +1,6 @@
-// =====================================================================
+ 
 //  BASE DE DATOS: gamestop_usa (MongoDB)
-//  Archivo 2 de 4: datos
-//  Ejecutar después de 01_colecciones.js:   mongosh mongodb/02_datos.js
-//
-//  GENERADO con:  python migracion/migrar.py --js mongodb/02_datos.js
-//  Son exactamente los mismos datos que la versión MySQL (estado después
-//  de cargar los archivos 01 a 05), ya calculados: importes, impuestos,
-//  puntos, crédito en tienda e inventario.
-//  Personas, direcciones, teléfonos y correos son FICTICIOS.
-// =====================================================================
+
 
 db = db.getSiblingDB("gamestop_usa");
 // Las fechas se guardan en UTC

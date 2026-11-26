@@ -1,21 +1,12 @@
--- =====================================================================
---  Archivo 6 de 8: consultas
---  30 consultas organizadas de básicas a avanzadas:
---    A. Básicas (SELECT, WHERE, ORDER BY, LIKE, BETWEEN, IN)
---    B. JOINs (INNER, LEFT, auto-JOIN, varias tablas)
---    C. Agregación (GROUP BY, HAVING)
---    D. Subconsultas (IN, EXISTS, NOT EXISTS, correlacionadas)
---    E. Avanzadas (CTE, funciones de ventana, CASE, UNION)
---    F. Vistas y procedimientos
--- =====================================================================
+
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- =====================================================================
+ 
 -- A. CONSULTAS BÁSICAS
--- =====================================================================
+ 
 
 -- A1. Tiendas ordenadas por antigüedad
 SELECT numero_tienda, nombre, ciudad, fecha_apertura
@@ -45,9 +36,9 @@ SELECT c.nombre, c.apellido, e.abreviatura
  WHERE e.abreviatura IN ('TX', 'CA', 'NY')
  ORDER BY e.abreviatura, c.apellido;
 
--- =====================================================================
+ 
 -- B. JOINs
--- =====================================================================
+ 
 
 -- B1. Detalle completo de un ticket (5 tablas)
 SELECT v.id_venta, v.fecha, s.nombre AS tienda,
@@ -95,9 +86,9 @@ SELECT i.id_intercambio, DATE(i.fecha) AS fecha, s.nombre AS tienda,
   JOIN productos p            ON p.id_producto    = di.id_producto
  ORDER BY i.fecha;
 
--- =====================================================================
+ 
 -- C. AGREGACIÓN
--- =====================================================================
+ 
 
 -- C1. Ingresos por categoría
 SELECT c.nombre AS categoria, SUM(d.cantidad) AS unidades,
@@ -155,9 +146,9 @@ SELECT n.nombre AS nivel, COUNT(DISTINCT c.id_cliente) AS clientes_que_compraron
   JOIN niveles_membresia n ON n.id_nivel   = c.id_nivel
  GROUP BY n.nombre;
 
--- =====================================================================
+ 
 -- D. SUBCONSULTAS
--- =====================================================================
+ 
 
 -- D1. Productos que NUNCA se han vendido (NOT EXISTS)
 SELECT p.sku, p.nombre, p.condicion
@@ -196,9 +187,9 @@ SELECT c.nombre AS categoria, p.nombre, p.precio_venta
  WHERE p.precio_venta = (SELECT MAX(p2.precio_venta) FROM productos p2
                           WHERE p2.id_categoria = p.id_categoria);
 
--- =====================================================================
+ 
 -- E. AVANZADAS: CTE, FUNCIONES DE VENTANA, CASE, UNION
--- =====================================================================
+ 
 
 -- E1. Top 3 productos más vendidos de CADA tienda (ROW_NUMBER)
 WITH ventas_tienda AS (
@@ -289,9 +280,9 @@ SELECT b.fecha, p.nombre, b.precio_anterior, b.precio_nuevo,
   FROM bitacora_precios b JOIN productos p ON p.id_producto = b.id_producto
  ORDER BY b.fecha, p.nombre;
 
--- =====================================================================
+ 
 -- F. VISTAS Y PROCEDIMIENTOS
--- =====================================================================
+ 
 
 -- F1. Top 10 productos por utilidad bruta (vista)
 SELECT nombre, categoria, unidades_netas, ingreso_neto, utilidad_bruta

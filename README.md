@@ -1,3 +1,21 @@
+
+Universidad Universidad Autónoma de Baja California (UABC) 
+Materia Bases de Datos Aavanzada
+Grupo  952 
+Profesor(a): Christian Gandarilla
+Proyecto Base de datos para una cadena de tiendas GameStop en Estados Unidos 
+Fecha de entrega 26 de noviembre de 2026 
+
+Integrantes
+
+ Nombres: 
+ Carlos Lopez
+  Jesús Reyes
+ Celeste Grageda 
+
+Introduccion
+Diseñamos e implementamos la base de datos de un distrito de 10 tiendas GameStop en 7 estados de EE. UU. El modelo relacional en MySQL tiene 22 tablas del negocio y 21 tablas de auditoría. Las reglas de negocio (impuesto por estado, descuentos de membresía, devoluciones, intercambios de usados e inventario) viven en triggers, funciones y procedimientos almacenados. Después migramos los datos a MongoDB y comprobamos con un script de validación que ambas bases tienen la misma información (61 de 61 pruebas correctas). Todo se puede usar desde una interfaz web hecha en Flask.
+  
   GameStop USA: base de datos para una cadena de tiendas de videojuegos
 
 Proyecto final de Bases de Datos. 
@@ -5,9 +23,7 @@ Hemos disela base de datos que usaría un distrito de  10 tiendas GameStop en 7 
 
 La base está hecha en  MySQL  y después se migró a  MongoDB . Incluye una  interfaz web  para usarla y un script que comprueba que las dos versiones tienen exactamente la misma información.
 
-![Diagrama EER de gamestop_usa generado en MySQL Workbench](docs/diagrama_eer.png)
 
----
 
 1. ¿Qué problema resuelve?
 

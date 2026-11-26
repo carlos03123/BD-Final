@@ -1,16 +1,11 @@
--- =====================================================================
---  Archivo 2 de 8: funciones y triggers
---  Se crean ANTES de cargar los datos para que cada venta, devolución
---  e intercambio de ejemplo actualice inventario, importes y puntos.
--- =====================================================================
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- =====================================================================
+ 
 -- FUNCIONES
--- =====================================================================
+ 
 
 -- Tasa de impuesto del estado donde está la tienda
 DROP FUNCTION IF EXISTS fn_tasa_impuesto;
@@ -82,9 +77,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+ 
 -- TRIGGERS DE VENTAS
--- =====================================================================
+ 
 
 -- Antes de agregar un renglón: precio del catálogo, descuento Pro,
 -- y validaciones de existencia y crédito en tienda.
@@ -191,9 +186,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+ 
 -- TRIGGERS DE DEVOLUCIONES
--- =====================================================================
+ 
 
 -- No se puede devolver más de lo que se compró, ni después de 30 días
 DROP TRIGGER IF EXISTS trg_detalle_devolucion_bi;
@@ -287,9 +282,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+ 
 -- TRIGGERS DE INTERCAMBIOS
--- =====================================================================
+ 
 
 -- Solo se reciben artículos usados/reacondicionados; si no se manda
 -- el valor, se calcula con fn_valor_intercambio.
@@ -347,9 +342,9 @@ BEGIN
 END$$
 DELIMITER ;
 
--- =====================================================================
+ 
 -- TRIGGERS DE COMPRAS Y AUDITORÍA
--- =====================================================================
+ 
 
 -- Mantiene el total de la orden de compra
 DROP TRIGGER IF EXISTS trg_detalle_orden_ai;

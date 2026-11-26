@@ -1,24 +1,13 @@
--- =====================================================================
---  Archivo 4 de 8: datos de ejemplo
---  Ejecutar después de 03_procedimientos.sql
---
---  Periodo simulado: 1 de octubre al 23 de noviembre de 2026.
---  Precios en dólares (USD). Personas, direcciones, teléfonos y correos
---  son FICTICIOS, creados con fines académicos.
---
---  Las ventas, intercambios, devoluciones y recepciones de mercancía
---  se cargan en orden cronológico: los TRIGGERS calculan importes,
---  impuestos, descuentos, puntos, crédito en tienda e inventario.
--- =====================================================================
+
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 SET @fecha_operacion = NULL;
 
--- ---------------------------------------------------------------------
+ 
 -- Estados (tasa de impuesto estatal sobre ventas; no incluye impuestos locales)
--- ---------------------------------------------------------------------
+ 
 INSERT INTO estados (nombre, abreviatura, tasa_impuesto) VALUES
 ('Texas', 'TX', 0.0625),
 ('California', 'CA', 0.0725),
@@ -31,9 +20,9 @@ INSERT INTO estados (nombre, abreviatura, tasa_impuesto) VALUES
 ('Ohio', 'OH', 0.0575),
 ('Colorado', 'CO', 0.0290);
 
--- ---------------------------------------------------------------------
+ 
 -- Tiendas
--- ---------------------------------------------------------------------
+ 
 INSERT INTO sucursales (numero_tienda, nombre, direccion, ciudad, id_estado, codigo_postal, telefono, fecha_apertura) VALUES
 (4402, 'GameStop Grapevine Mills', '3000 Grapevine Mills Pkwy, Suite 512', 'Grapevine', 1, '76051', '(972) 555-0142', '2004-08-14'),
 (5121, 'GameStop Galleria Dallas', '13350 Dallas Pkwy, Suite 2140', 'Dallas', 1, '75240', '(972) 555-0187', '2006-03-02'),
@@ -46,9 +35,9 @@ INSERT INTO sucursales (numero_tienda, nombre, direccion, ciudad, id_estado, cod
 (9025, 'GameStop Arizona Mills', '5000 S Arizona Mills Cir, Suite 233', 'Tempe', 6, '85282', '(480) 555-0158', '2014-07-11'),
 (9310, 'GameStop Northgate', '401 NE Northgate Way, Suite 1104', 'Seattle', 7, '98125', '(206) 555-0147', '2015-02-27');
 
--- ---------------------------------------------------------------------
+ 
 -- Empleados (primero gerentes de distrito, luego cada tienda)
--- ---------------------------------------------------------------------
+ 
 INSERT INTO empleados (id_empleado, nombre, apellido, correo, telefono, puesto, salario_hora, fecha_contratacion, id_sucursal, id_supervisor) VALUES
 (1, 'Robert', 'Coleman', 'robert.coleman@gamestop.com', '(287) 555-5694', 'Gerente de distrito', 41.50, '2009-01-12', 1, NULL),
 (2, 'Angela', 'Navarro', 'angela.navarro@gamestop.com', '(294) 555-7100', 'Gerente de distrito', 41.50, '2011-06-20', 4, NULL),
@@ -96,9 +85,9 @@ INSERT INTO empleados (id_empleado, nombre, apellido, correo, telefono, puesto, 
 (44, 'Mariana', 'Flores', 'mariana.flores@gamestop.com', '(842) 555-4772', 'Asesor senior', 17.66, '2021-09-21', 10, 43),
 (45, 'Destiny', 'Hill', 'destiny.hill@gamestop.com', '(862) 555-8285', 'Asesor', 18.16, '2025-02-22', 10, 43);
 
--- ---------------------------------------------------------------------
+ 
 -- Programa de lealtad y clientes
--- ---------------------------------------------------------------------
+ 
 INSERT INTO niveles_membresia (nombre, costo_anual, descuento_usados_pct, bono_intercambio_pct, puntos_por_dolar) VALUES
 ('PowerUp Rewards', 0.00, 0.00, 0.00, 1),
 ('GameStop Pro', 25.00, 10.00, 10.00, 2);
@@ -165,9 +154,9 @@ INSERT INTO clientes (id_cliente, nombre, apellido, correo, telefono, fecha_naci
 (59, 'Camila', 'Wright', 'camila.wright@inbox.com', '(683) 555-4148', '1976-03-11', 2, 2, '2027-08-08', 800, '2018-05-27'),
 (60, 'Michael', 'Nguyen', 'michael.nguyen@mail.com', '(679) 555-4706', '1980-11-27', 1, 2, '2026-10-20', 650, '2022-04-23');
 
--- ---------------------------------------------------------------------
+ 
 -- Catálogos
--- ---------------------------------------------------------------------
+ 
 INSERT INTO categorias (nombre, descripcion) VALUES
 ('Videojuego', 'Juegos físicos nuevos y usados'),
 ('Consola', 'Consolas nuevas, usadas y reacondicionadas'),
@@ -217,9 +206,9 @@ INSERT INTO proveedores (nombre, contacto, telefono, correo, ciudad, id_estado) 
 ('Blackhawk Network', 'Tom Price', '(925) 555-0114', 'sales@blackhawk.example.com', 'Pleasanton', 2),
 ('SanDisk', 'Rachel Kim', '(408) 555-0115', 'sales@sandisk.example.com', 'Milpitas', 2);
 
--- ---------------------------------------------------------------------
+ 
 -- Productos (67)
--- ---------------------------------------------------------------------
+ 
 INSERT INTO productos (id_producto, sku, nombre, id_categoria, id_plataforma, id_proveedor, condicion, clasificacion_esrb, precio_venta, costo, fecha_lanzamiento, activo) VALUES
 (1, 'CON-PS5-SLM', 'PlayStation 5 Slim (lector de discos)', 2, 1, 1, 'Nuevo', NULL, 549.99, 420.00, '2023-11-10', TRUE),
 (2, 'CON-PS5-DIG', 'PlayStation 5 Digital Edition', 2, 1, 1, 'Nuevo', NULL, 499.99, 375.00, '2023-11-10', TRUE),
@@ -367,9 +356,9 @@ INSERT INTO producto_genero (id_producto, id_genero) VALUES
 (45, 11),
 (67, 5);
 
--- ---------------------------------------------------------------------
+ 
 -- Inventario inicial al 1 de octubre de 2026
--- ---------------------------------------------------------------------
+ 
 INSERT INTO inventario (id_sucursal, id_producto, existencia, stock_minimo) VALUES
 (1, 1, 5, 2),
 (1, 2, 9, 2),
@@ -1002,12 +991,12 @@ INSERT INTO inventario (id_sucursal, id_producto, existencia, stock_minimo) VALU
 (10, 64, 5, 3),
 (10, 67, 2, 0);
 
--- ---------------------------------------------------------------------
+ 
 -- Operaciones del periodo en orden cronológico:
 --   órdenes de compra y su recepción (sp_recibir_orden),
 --   cambios de precio (los registra la bitácora por trigger),
 --   intercambios y ventas (los importes los calculan los triggers)
--- ---------------------------------------------------------------------
+ 
 INSERT INTO ventas (id_venta, fecha, id_sucursal, id_empleado, id_cliente, metodo_pago) VALUES (1, '2026-10-01 12:20:00', 4, 20, 26, 'Tarjeta de crédito');
 INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (1, 63, 2, NULL), (1, 15, 1, NULL);
 INSERT INTO ventas (id_venta, fecha, id_sucursal, id_empleado, id_cliente, metodo_pago) VALUES (2, '2026-10-01 12:30:00', 5, 22, 12, 'Tarjeta de crédito');
@@ -2089,10 +2078,10 @@ INSERT INTO ventas (id_venta, fecha, id_sucursal, id_empleado, id_cliente, metod
 INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_unitario) VALUES (473, 13, 1, NULL), (473, 63, 1, NULL);
 SET @fecha_operacion = NULL;
 
--- ---------------------------------------------------------------------
+ 
 -- Devoluciones (el trigger valida cantidades y plazo, regresa inventario
 -- y calcula el reembolso con impuesto)
--- ---------------------------------------------------------------------
+ 
 INSERT INTO devoluciones (id_devolucion, id_venta, fecha, id_empleado, motivo) VALUES (1, 57, '2026-10-18 13:30:00', 21, 'Regalo duplicado');
 INSERT INTO detalle_devolucion (id_devolucion, id_producto, cantidad) VALUES (1, 48, 1), (1, 6, 1);
 INSERT INTO devoluciones (id_devolucion, id_venta, fecha, id_empleado, motivo) VALUES (2, 69, '2026-10-22 18:40:00', 4, 'Defectuoso');
@@ -2122,9 +2111,9 @@ INSERT INTO detalle_devolucion (id_devolucion, id_producto, cantidad) VALUES (13
 INSERT INTO devoluciones (id_devolucion, id_venta, fecha, id_empleado, motivo) VALUES (14, 343, '2026-11-23 21:00:00', 9, 'Error de compra');
 INSERT INTO detalle_devolucion (id_devolucion, id_producto, cantidad) VALUES (14, 15, 1);
 
--- ---------------------------------------------------------------------
+ 
 -- Preventas
--- ---------------------------------------------------------------------
+ 
 INSERT INTO preventas (fecha, id_cliente, id_producto, id_sucursal, anticipo, estado) VALUES
 ('2026-06-11', 38, 14, 7, 10.00, 'Entregada'),
 ('2026-06-22', 13, 13, 8, 10.00, 'Entregada'),

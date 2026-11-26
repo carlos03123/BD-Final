@@ -1,27 +1,12 @@
--- =====================================================================
---  Archivo 8 de 8: pruebas de reglas de negocio y transacciones
---
---  Demuestra que la base de datos RECHAZA operaciones inválidas
---  (triggers, CHECK, llaves foráneas, procedimientos) y que las
---  transacciones se deshacen completas cuando algo falla.
---
---  Las pruebas que deben fallar se ejecutan con sp_probar(), que atrapa
---  el error y lo muestra como resultado, así el script corre completo
---  en MySQL Workbench sin detenerse.
---
---  OJO: este archivo SÍ modifica datos (agrega una venta, mueve
---  inventario, crea órdenes...). Para regresar al estado original,
---  vuelve a ejecutar los archivos 01 a 05.
--- =====================================================================
-
+ 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- ---------------------------------------------------------------------
+  
 -- Procedimiento auxiliar: ejecuta una sentencia y reporta si pasó o
 -- con qué mensaje fue rechazada.
--- ---------------------------------------------------------------------
+  
 DROP PROCEDURE IF EXISTS sp_probar;
 DELIMITER $$
 CREATE PROCEDURE sp_probar(IN p_prueba VARCHAR(200), IN p_sentencia TEXT)
@@ -50,9 +35,9 @@ SELECT id_producto, cantidad INTO @prod_reciente, @cant_reciente
   FROM detalle_venta WHERE id_venta = @venta_reciente ORDER BY id_producto LIMIT 1;
 SELECT id_cliente INTO @cliente_sin_credito FROM clientes WHERE credito_tienda = 0 ORDER BY id_cliente LIMIT 1;
 
--- =====================================================================
+ 
 -- 1. REGLAS QUE DEBEN RECHAZAR OPERACIONES
--- =====================================================================
+ 
 
 -- 1.1 Vender más piezas de las que hay en la tienda (trigger)
 CALL sp_probar('1.1 Vender 500 PS5 en una tienda',
@@ -139,9 +124,9 @@ CALL sp_probar('1.16 Recibir dos veces la misma orden', 'CALL sp_recibir_orden(1
 -- 1.17 Transferir más inventario del que hay (procedimiento con transacción)
 CALL sp_probar('1.17 Transferir 300 consolas', 'CALL sp_transferir_inventario(1, 2, ''CON-PS5-SLM'', 300)');
 
--- =====================================================================
+ 
 -- 2. OPERACIONES VÁLIDAS (deben ACEPTARSE y actualizar todo en cadena)
--- =====================================================================
+ 
 
 -- 2.1 Venta completa con sp_registrar_venta: cliente Pro comprando un juego usado
 SELECT c.id_cliente, c.puntos, c.credito_tienda INTO @cli_pro, @puntos_antes, @credito_antes
@@ -186,10 +171,10 @@ CALL sp_renovar_pro(@cli_vencido, CURDATE());
 CALL sp_ajustar_precios('Accesorio', 'Xbox Series X|S', -10);
 SELECT * FROM bitacora_precios ORDER BY id_bitacora DESC LIMIT 3;
 
--- =====================================================================
+ 
 -- 3. TRANSACCIÓN MANUAL CON ROLLBACK
 --    Se suben todos los precios 50% "por error" y se deshace.
--- =====================================================================
+ 
 SELECT SUM(precio_venta) INTO @suma_precios FROM productos;
 START TRANSACTION;
   UPDATE productos SET precio_venta = precio_venta * 1.5

@@ -1,15 +1,6 @@
-// =====================================================================
+ 
 //  BASE DE DATOS: gamestop_usa (MongoDB)
-//  Archivo 4 de 4: consultas (equivalentes a mysql/06_consultas.sql)
-//
-//  Ejecutar después de 02_datos.js:   mongosh mongodb/04_consultas.js
-//    A. find() con filtros, proyección y orden
-//    B. $lookup (el "JOIN" de MongoDB)
-//    C. Agregación: $group, $unwind, $match después de agrupar (HAVING)
-//    D. Equivalentes a subconsultas
-//    E. Avanzadas: $setWindowFields (funciones de ventana), $facet, $bucket
-//    F. Vistas
-// =====================================================================
+
 
 db = db.getSiblingDB("gamestop_usa");
 var D = (s) => new Date(s.length === 10 ? s + "T00:00:00Z" : s + "Z");
@@ -20,9 +11,9 @@ function show(titulo, cursor) {
   print("(" + docs.length + " documentos)");
 }
 
-// =====================================================================
+ 
 // A. find()
-// =====================================================================
+ 
 
 show("A1. Tiendas ordenadas por antigüedad",
   db.sucursales.find({}, { _id: 0, numero_tienda: 1, nombre: 1, ciudad: 1, fecha_apertura: 1 }).sort({ fecha_apertura: 1 }));
@@ -43,9 +34,9 @@ show("A5. Clientes de TX, CA o NY con GameStop Pro",
 show("A6. Juegos de Acción Y Mundo abierto ($all sobre un arreglo)",
   db.productos.find({ generos: { $all: ["Acción", "Mundo abierto"] } }, { nombre: 1, generos: 1 }));
 
-// =====================================================================
+ 
 // B. $lookup
-// =====================================================================
+ 
 
 show("B1. Detalle de un ticket con los datos del cliente",
   db.ventas.aggregate([
@@ -86,9 +77,9 @@ show("B4. Intercambios con el nombre del cliente",
     { $sort: { fecha: 1 } }, { $limit: 10 }
   ]));
 
-// =====================================================================
+ 
 // C. AGREGACIÓN
-// =====================================================================
+ 
 
 show("C1. Ingresos por categoría",
   db.ventas.aggregate([
@@ -144,9 +135,9 @@ show("C6. GameStop Pro vs PowerUp Rewards",
                   descuentos: { $round: ["$descuentos", 2] } } }
   ]));
 
-// =====================================================================
+ 
 // D. EQUIVALENTES A SUBCONSULTAS
-// =====================================================================
+ 
 
 var vendidos = db.ventas.distinct("articulos.sku");
 show("D1. Productos que nunca se han vendido (NOT IN)",
@@ -175,9 +166,9 @@ show("D5. El producto más caro de cada categoría",
     { $sort: { _id: 1 } }
   ]));
 
-// =====================================================================
+ 
 // E. AVANZADAS
-// =====================================================================
+ 
 
 show("E1. Top 3 productos de CADA tienda ($setWindowFields = ROW_NUMBER)",
   db.ventas.aggregate([
@@ -258,9 +249,9 @@ show("E8. Productos bajo el stock mínimo en Grapevine Mills",
     { $sort: { existencia: 1, nombre: 1 } }
   ]));
 
-// =====================================================================
+ 
 // F. VISTAS
-// =====================================================================
+ 
 show("F1. Vista v_ventas_tienda", db.v_ventas_tienda.find());
 show("F2. Vista v_inventario_valorizado", db.v_inventario_valorizado.find());
 show("F3. Vista v_catalogo (5 con mayor margen)", db.v_catalogo.find({ activo: true }).sort({ margen_pct: -1 }).limit(5));

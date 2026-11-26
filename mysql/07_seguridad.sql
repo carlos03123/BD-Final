@@ -1,33 +1,19 @@
--- =====================================================================
---  Archivo 7 de 8: seguridad (roles, usuarios y privilegios)
---  Requiere ejecutarse con un usuario administrador (root).
---
---  Roles:
---    rol_admin     -> control total de la base de datos
---    rol_gerente   -> opera la tienda: consulta todo, registra compras,
---                     cambia precios y ejecuta todos los procedimientos
---    rol_vendedor  -> punto de venta: consulta catálogo e inventario,
---                     registra ventas, intercambios, devoluciones y preventas
---    rol_analista  -> solo lectura de vistas y reportes
---
---  Las contraseñas son de ejemplo: cámbialas en un servidor real.
--- =====================================================================
 
 SET NAMES utf8mb4;
 
 USE gamestop_usa;
 
--- ---------------------------------------------------------------------
+  
 -- Limpieza (para poder ejecutar el script varias veces)
--- ---------------------------------------------------------------------
+  
 DROP USER IF EXISTS 'gs_admin'@'localhost', 'gs_gerente_tx'@'localhost',
                     'gs_vendedor_tx'@'localhost', 'gs_vendedor_ca'@'localhost',
                     'gs_analista'@'localhost';
 DROP ROLE IF EXISTS 'rol_admin', 'rol_gerente', 'rol_vendedor', 'rol_analista';
 
--- ---------------------------------------------------------------------
+  
 -- Roles
--- ---------------------------------------------------------------------
+  
 CREATE ROLE 'rol_admin', 'rol_gerente', 'rol_vendedor', 'rol_analista';
 
 -- Administrador
@@ -71,9 +57,9 @@ GRANT SELECT ON gamestop_usa.v_inventario_valorizado TO 'rol_analista';
 GRANT SELECT ON gamestop_usa.v_ventas_diarias        TO 'rol_analista';
 GRANT EXECUTE ON PROCEDURE gamestop_usa.sp_reporte_ventas TO 'rol_analista';
 
--- ---------------------------------------------------------------------
+  
 -- Usuarios
--- ---------------------------------------------------------------------
+  
 CREATE USER 'gs_admin'@'localhost'       IDENTIFIED BY 'Admin#GS2026!';
 CREATE USER 'gs_gerente_tx'@'localhost'  IDENTIFIED BY 'Gerente#TX2026!';
 CREATE USER 'gs_vendedor_tx'@'localhost' IDENTIFIED BY 'Vendedor#TX2026!';
@@ -92,9 +78,9 @@ SET DEFAULT ROLE ALL TO 'gs_admin'@'localhost', 'gs_gerente_tx'@'localhost',
                         'gs_vendedor_tx'@'localhost', 'gs_vendedor_ca'@'localhost',
                         'gs_analista'@'localhost';
 
--- ---------------------------------------------------------------------
+  
 -- Verificación
--- ---------------------------------------------------------------------
+  
 SHOW GRANTS FOR 'rol_vendedor';
 SHOW GRANTS FOR 'gs_vendedor_tx'@'localhost' USING 'rol_vendedor';
 SHOW GRANTS FOR 'gs_analista'@'localhost' USING 'rol_analista';

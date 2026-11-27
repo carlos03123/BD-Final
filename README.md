@@ -27,7 +27,7 @@ La base está hecha en  MySQL  y después se migró a  MongoDB . Incluye una  in
 
 1. ¿Qué problema resuelve?
 
-GameStop no es una tienda común. Además de vender, compra juegos y consolas usados a sus clientes para revenderlos, tiene un programa de lealtad de pago (GameStop Pro) y opera en estados con impuestos distintos. Eso genera reglas que una hoja de cálculo no puede garantizar:
+GameStop, además de vender, tiene un programa de lealtad de pago (GameStop Pro) y opera en estados con impuestos distintos. Eso genera reglas que una hoja de cálculo no puede garantizar:
 
 | Situación real | Qué hace la base de datos |
 |---|---|
